@@ -541,6 +541,8 @@ left_apply eo (right_apply (lift equals') (some (equals' he))) (fun x -> x) [];;
 
 let ddp = every' (left_apply gap (right_apply (lift gthan') so) (fun x -> x));;
 left_apply ddp (right_apply (lift gthan') (fun p -> p he1)) (fun x -> x) [];;
+
+(*to think about: islands, DP as scope island*)
  
 (*why he2 is defined?*)
 (*why are these stacks so long?*)
