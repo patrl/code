@@ -407,7 +407,22 @@ every (equals_ws gap so) (equals he1) [];;
   # Exception: Failure "nth".
 *)
 
+(**donkey reconstruction**)
 
+let the_least_eq x p s = 
+  let rec checker list = match list with a::b ->
+    let s1 = p (unit a) s in
+    let s2 = equals x (unit a) s in
+    if truthy s1 && truthy s2 then (a, s)
+    else checker b in
+  checker univ;;
+
+(*
+  which of its equals does every number(n) equal to some number(m) equal?
+  the least one equal to it(n/m)!
+*)
+which (equals he) (equals_ws gap (every (equals_ws gap so))) (the_least_eq he1) [];;
+which (equals he) (equals_ws gap (every (equals_ws gap so))) (the_least_eq he) [];;
 
 
 (**2 think about**)
