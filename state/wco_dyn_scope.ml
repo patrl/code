@@ -425,6 +425,20 @@ which (equals he) (equals_ws gap (every (equals_ws gap so))) (the_least_eq he1) 
 which (equals he) (equals_ws gap (every (equals_ws gap so))) (the_least_eq he) [];;
 
 
+(**inv linking reconstruction**)
+
+(*
+  which of its equals does an(n) equal of every number(m) equal?
+  the least one equal to it(n/m)!
+*)
+let dp1' x = some (equals x);;
+let ar_dp' = fun q p -> q (fun x -> dp1' x p);;
+let dp2' = ar_dp' eo;;
+
+which (equals he) (equals_ws gap dp2') (the_least_eq he1) [];;
+which (equals he) (equals_ws gap dp2') (the_least_eq he) [];;
+
+
 (**2 think about**)
 
 (*islands/resets?*)
