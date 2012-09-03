@@ -88,7 +88,7 @@ let some p q s =
   let test x =
     let extract p x q s =
       let list = p (unit x) s in
-      let dref (a,b) = if a then [fun s -> (x,b@[x])] else [] in (*nb weirdness*)
+      let dref (a,b) = if a then [fun s -> (x,s@b@[x])] else [] in (*nb weirdness*)
       let extend = List.concat (List.map dref list) in
       List.concat (List.map (fun u -> q u s) extend) in
     let lift = extract p x q s in
@@ -439,145 +439,92 @@ which (equals he) (equals_ws gap dp2') (the_least_eq he1) [];;
 which (equals he) (equals_ws gap dp2') (the_least_eq he) [];;
 
 
-(**2 think about**)
-
-(*islands/resets?*)
-(*superiority?*)
-
-(*is gap pruning generally ok? every list always has same length??*)
-
-(*weak and strong, plurals*)
-(*functional readings, subordination*)
-(*principle B w/stack?*)
-
-(*can pass up constants easily w/relevant tweak to negation*)
-(*ellipsis*)
-(*exc scoping indefs?*)
-(*type-shifter that pointwise applies elements of a non-det set*)
-
-
-type prop = state -> (bool * state) list;;
-
-let pw (op:prop -> prop) (p:prop) : prop = fun s -> 
-  let list1 = p s in 
-  let lifted = List.map (fun pair s' -> [pair]) list1 in
-  List.concat (List.map (fun f -> op f s) lifted)
+let ll l r k s = 
+  l (fun l' -> bind l' (fun l'' -> 
+    r (fun r' s' ->
+      k (r' l') s'
+    ))) s
 ;;
 
-
-let neg_pw = pw neg;;
-
-let prop : prop = fun s -> [(true, s@[3]); (false, s@[4]); (false, s@[6])];;
-neg_pw prop [];;
-
-(*selective binding: treating members that agree on nth member as equiv class*)
-(*no donald duck????*)
-(*still question of 'every'*)
-(*cps transform for scope-shift?*)
-
-
-
-(*when one is a scope-taking DP, cf. binding rule*)
-let left_apply l r k = 
-  l (fun l' -> bind l' (fun l'' -> r (fun r' -> k (r' (unit l'')))))
+let rr l r k s = 
+  l (fun l' ->
+    r (fun r' -> bind r' (fun r'' s' -> 
+      k (l' r') s'
+    ))) s
 ;;
-
-let right_apply l r k = 
-  l (fun l' -> r (fun r' -> bind r' (fun r'' -> k (l' (unit r'')))))
-;;
-
-(*otherwise*)
-let la l r k = 
-  l (fun l' -> r (fun r' -> k (r' l')))
-;;
-
-let ra l r k = 
-  l (fun l' -> r (fun r' -> k (l' r')))
-;;
-
-
-(*scope dislacement*)
-let l3 l r c = l (fun l' -> r (fun r' -> c (fun c' -> left_apply l' r' c')));;
-let r3 l r c = l (fun l' -> r (fun r' -> c (fun c' -> right_apply l' r' c')));;
-let la3 l r c = l (fun l' -> r (fun r' -> c (fun c' -> la l' r' c')));;
-let ra3 l r c = l (fun l' -> r (fun r' -> c (fun c' -> ra l' r' c')));;
-let low f c = f (fun f' -> c (f' (fun x -> x)));;
 
 let lift x c = c x;;
 let int_lift h c = h (fun x -> c (fun k -> k x));;
 
-let v = (lift (lift equals)) in
-let s = lift eo in
-let o = lift (some (equals he)) in
-low (l3 s (r3 v o)) (fun x -> x) [];;
+let low f c = f (fun f' -> c (f' (fun x -> x)));;
+let low3 f = low f (fun x -> x) [];;
 
-(*
-  crossover
 
-  let v = (lift (lift equals)) in
-  let s = lift (some (equals he)) in
-  let o = int_lift eo in
-  low (l3 s (r3 v o)) (fun x -> x) [];;
-  
-  roofing 
-
-  let v = (lift (lift equals)) in
-  let s = lift eo in
-  let o = int_lift (some (equals he)) in
-  low (l3 s (r3 v o)) (fun x -> x) [];;
-  
-*)
-
-(*note how binding scope rules are necessary even without restrictors*)
-left_apply so (lift (fun x -> neg (gthan (unit 5) x))) (fun x -> x) [];;
-
-(*adding resets*)
-(*less than straightforward to do islands in multistage setting*)
-let reset f k = k (f (fun x -> x));;
-
-(*you could get rid of right binding rule, have two rules for FA and a separate one when you want to pass binding info from an argument -- analogous to the bind type-shifter*)
-(*there is still a redundancy - you can have binding in "everyone likes himself" type constructions because bind is build into lex entry for lex relations*)
-
-(*could try removing completely, just doing binding with scope rules*)
-
-let bind' x f = fun s -> 
-  let (x', s') = x s in
-  f x' s;;
-
-let equals' r l s = 
-  [bind' l (fun x -> 
-    bind' r (fun y -> 
-      unit (x = y))) s]
+let ll3 l r k s =
+  l (fun l' -> 
+    r (fun r' s' ->
+      k (fun k' ->
+	ll l' r' k') s
+      )) s
 ;;
 
-let gthan' r l s = 
-  [bind' l (fun x -> 
-    bind' r (fun y -> 
-      unit (x > y))) s]
+let rr3 l r k s = 
+  l (fun l' -> 
+    r (fun r' s' ->
+      k (fun k' ->
+	rr l' r' k') s
+      )) s
 ;;
 
+(*inverse scope*)
+low3 (ll3 (lift so) (rr3 (lift (lift equals)) (int_lift eo)));;
+
+(*binding*)
+low3 (ll3 (lift eo) (rr3 (lift (lift equals)) (lift he')));;
+low3 (ll3 (lift eo) (rr3 (lift (lift equals)) (lift he')));;
+low3 (ll3 (lift eo) (rr3 (lift (lift equals)) (lift (some (equals he)))));;
+low3 (ll3 (int_lift eo) (rr3 (lift (lift equals)) (lift (some (equals he)))));;
+low3 (ll3 (int_lift eo) (rr3 (lift (lift equals)) (int_lift (some (equals he)))));;
+
+(*roofing*)
+(*only makes sense to bind into sthg if you scope over it*)
+low3 (ll3 (lift eo) (rr3 (lift (lift equals)) (int_lift (some (equals he)))));;
+low3 (ll3 (lift eo) (int_lift (rr (lift equals) (some (equals he)))));;
+
+(*strong crossover*)
+low3 (ll3 (lift he') (rr3 (lift (lift equals)) (int_lift eo)));;
+low3 (ll3 (lift he') (int_lift (rr (lift equals) eo)));;
+
+(*weak crossover*)
+low3 (ll3 (lift (some (equals he))) (rr3 (lift (lift equals)) (int_lift eo)));;
+low3 (ll3 (lift (some (equals he))) (int_lift (rr (lift equals) eo)));;
+
+
+let sum15 x y z = bind x (fun x' -> bind y (fun y' -> bind z (fun z' s -> [unit (x'+y'+z'=15) s])));;
+
+let int_lift h c s = h (fun x s' -> c (fun k -> k x) s) s;;
+low3 (ll3 (lift he') (int_lift (rr (rr (lift sum15) eo) (some (equals he)))));;
+low3 (ll3 (lift (lift (unit 3))) (int_lift (rr (rr (lift sum15) so) (some (equals he)))));;
+low3 (ll3 (lift (lift (unit 3))) (rr3 (rr3 (lift (lift sum15)) (int_lift so)) (lift (some (equals he)))));;
+
+
+(*need a lower type-shifter?*)
+let low_bind f x = f (fun c -> c x);;
+(*same family as regular lower*)
+(*actually best to collapse 3 levels to 2?*)
+
+(*think about S > O2 > O1*)
 (*
-equals' he (unit' 2) [];;
-*)
-left_apply (lift (unit' 2)) (right_apply (lift equals') he') (fun x -> x) [];;
-left_apply eo (right_apply (lift equals') (some (equals' he))) (fun x -> x) [];;
-
-
-(*
-  donkey anaphora, scope inside DP requires lowering, 
-  but still have the possibility of binding, cf. BS
+  S > O1 > O2   k
+  S > O2 > O1
+  O1 > S > O2   k
+  O1 > O2 > S   k
+  O2 > S > O1   k
+  O2 > O1 > S
 *)
 
-let ddp = every' (left_apply gap (right_apply (lift gthan') so) (fun x -> x));;
-left_apply ddp (right_apply (lift gthan') (fun p -> p he1)) (fun x -> x) [];;
 
-(*to think about: islands, DP as scope island*)
- 
-(*why he2 is defined?*)
-(*why are these stacks so long?*)
-(*probably need to think some more about formluation of gaps*)
-(*on the other hand, who cares?*)
-(*unclear role of tick*)
-some (left_apply gap (right_apply (lift gthan') so) (fun x -> x)) thing [];;
-some (equals_ss so gap) thing [];;
+(*works!*) 
+(*only thing to do: get more abstract, check for ditrans's*)
 
+(*system with analog of bind type-shifters*)
