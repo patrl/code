@@ -439,19 +439,9 @@ which (equals he) (equals_ws gap dp2') (the_least_eq he1) [];;
 which (equals he) (equals_ws gap dp2') (the_least_eq he) [];;
 
 
-let ll l r k s = 
-  l (fun l' -> bind l' (fun l'' -> 
-    r (fun r' s' ->
-      k (r' l') s'
-    ))) s
-;;
+let ll l r k = l (fun l' -> r (fun r' -> k (r' l')));;
 
-let rr l r k s = 
-  l (fun l' ->
-    r (fun r' -> bind r' (fun r'' s' -> 
-      k (l' r') s'
-    ))) s
-;;
+let rr l r k = l (fun l' -> r (fun r' -> k (l' r')));;
 
 let lift x c = c x;;
 let int_lift h c = h (fun x -> c (fun k -> k x));;
@@ -459,6 +449,8 @@ let int_lift h c = h (fun x -> c (fun k -> k x));;
 let low f c = f (fun f' -> c (f' (fun x -> x)));;
 let low3 f = low f (fun x -> x) [];;
 
+let set f c = f (fun x -> bind x (fun x' -> c (unit x')));;
+let set3 f c = f (fun x -> c (fun k -> bind x (fun x' -> k (unit x'))));;
 
 let ll3 l r k s =
   l (fun l' -> 
@@ -476,36 +468,57 @@ let rr3 l r k s =
       )) s
 ;;
 
+
+let bind' x f = fun s -> 
+  let (x', s') = x s in
+  f x' s;;
+
+let equals' r l s = 
+  [bind' l (fun x -> 
+    bind' r (fun y -> 
+      unit (x = y))) s]
+;;
+
+let he' c = bind he (fun x -> c (unit x));; 
+
 (*inverse scope*)
-low3 (ll3 (lift so) (rr3 (lift (lift equals)) (int_lift eo)));;
+low3 (ll3 (lift so) (rr3 (lift (lift equals')) (int_lift eo)));;
 
 (*binding*)
-low3 (ll3 (lift eo) (rr3 (lift (lift equals)) (lift he')));;
-low3 (ll3 (lift eo) (rr3 (lift (lift equals)) (lift he')));;
-low3 (ll3 (lift eo) (rr3 (lift (lift equals)) (lift (some (equals he)))));;
-low3 (ll3 (int_lift eo) (rr3 (lift (lift equals)) (lift (some (equals he)))));;
-low3 (ll3 (int_lift eo) (rr3 (lift (lift equals)) (int_lift (some (equals he)))));;
+low3 (ll3 (lift (set eo)) (rr3 (lift (lift equals')) (lift he')));;
+low3 (ll3 (lift (set eo)) (rr3 (lift (lift equals')) (lift he')));;
+low3 (ll3 (lift (set eo)) (rr3 (lift (lift equals')) (lift (some (equals' he)))));;
+low3 (ll3 (set3 eo) (rr3 (lift (lift equals')) (lift (some (equals' he)))));;
+low3 (ll3 (set3 eo) (rr3 (lift (lift equals')) (int_lift (some (equals' he)))));;
 
 (*roofing*)
 (*only makes sense to bind into sthg if you scope over it*)
-low3 (ll3 (lift eo) (rr3 (lift (lift equals)) (int_lift (some (equals he)))));;
-low3 (ll3 (lift eo) (int_lift (rr (lift equals) (some (equals he)))));;
+low3 (ll3 (lift (set eo)) (rr3 (lift (lift equals')) (int_lift (some (equals' he)))));;
+low3 (ll3 (lift (set eo)) (int_lift (rr (lift equals') (some (equals' he)))));;
 
 (*strong crossover*)
-low3 (ll3 (lift he') (rr3 (lift (lift equals)) (int_lift eo)));;
-low3 (ll3 (lift he') (int_lift (rr (lift equals) eo)));;
+low3 (ll3 (lift he') (rr3 (lift (lift equals')) (set3 eo)));;
+low3 (ll3 (lift he') (int_lift (rr (lift equals') (set eo))));;
 
 (*weak crossover*)
-low3 (ll3 (lift (some (equals he))) (rr3 (lift (lift equals)) (int_lift eo)));;
-low3 (ll3 (lift (some (equals he))) (int_lift (rr (lift equals) eo)));;
+low3 (ll3 (lift (some (equals' he))) (rr3 (lift (lift equals')) (set3 eo)));;
+low3 (ll3 (lift (some (equals' he))) (int_lift (rr (lift equals') (set eo))));;
+
+
+
+
+
+
+
+
 
 
 let sum15 x y z = bind x (fun x' -> bind y (fun y' -> bind z (fun z' s -> [unit (x'+y'+z'=15) s])));;
 
 let int_lift h c s = h (fun x s' -> c (fun k -> k x) s) s;;
-low3 (ll3 (lift he') (int_lift (rr (rr (lift sum15) eo) (some (equals he)))));;
-low3 (ll3 (lift (lift (unit 3))) (int_lift (rr (rr (lift sum15) so) (some (equals he)))));;
-low3 (ll3 (lift (lift (unit 3))) (rr3 (rr3 (lift (lift sum15)) (int_lift so)) (lift (some (equals he)))));;
+low3 (ll3 (lift he') (int_lift (rr (rr (lift sum15) (set eo)) (some (equals he)))));;
+low3 (ll3 (lift (lift (unit 3))) (int_lift (rr (rr (lift sum15) (set so)) (some (equals he)))));;
+low3 (ll3 (lift (lift (unit 3))) (rr3 (rr3 (lift (lift sum15)) (set3 so)) (lift (some (equals he)))));;
 
 
 (*need a lower type-shifter?*)
@@ -525,6 +538,6 @@ let low_bind f x = f (fun c -> c x);;
 
 
 (*works!*) 
-(*only thing to do: get more abstract, check for ditrans's*)
+(*only thing to do: check for ditrans's*)
 
 (*system with analog of bind type-shifters*)
