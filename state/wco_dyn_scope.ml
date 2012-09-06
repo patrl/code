@@ -113,7 +113,8 @@ let every' p q = neg (some p (fun x -> neg (q x)));;
 (*seems to work as well*)
 
 (*GQs*)
-let eo = every thing;;
+(*changed eo; should double-check rest*)
+let eo = every' thing;;
 let so = some thing;;
 
 (**in situ quantification and inverse scope**)
@@ -451,9 +452,11 @@ let low3 f = low f (fun x -> x) [];;
 
 let set f c = f (fun x -> bind x (fun x' -> c (unit x')));;
 let set3 f c = f (fun x -> c (fun k -> bind x (fun x' -> k (unit x'))));;
+let int_bind g c = 
+  g (fun f -> c (fun k -> bind (f (fun x -> x)) (fun x' -> k (unit x'))));;
 
 let ll3 l r k s =
-  l (fun l' -> 
+  l (fun l' ->  
     r (fun r' s' ->
       k (fun k' ->
 	ll l' r' k') s
@@ -488,8 +491,9 @@ low3 (ll3 (lift so) (rr3 (lift (lift equals')) (int_lift eo)));;
 low3 (ll3 (lift (set eo)) (rr3 (lift (lift equals')) (lift he')));;
 low3 (ll3 (lift (set eo)) (rr3 (lift (lift equals')) (lift he')));;
 low3 (ll3 (lift (set eo)) (rr3 (lift (lift equals')) (lift (some (equals' he)))));;
-low3 (ll3 (set3 eo) (rr3 (lift (lift equals')) (lift (some (equals' he)))));;
-low3 (ll3 (set3 eo) (rr3 (lift (lift equals')) (int_lift (some (equals' he)))));;
+low3 (ll3 (int_bind (int_lift eo)) (rr3 (lift (lift equals')) (lift (some (equals' he)))));;
+low3 (ll3 (int_lift (set eo)) (rr3 (lift (lift equals')) (int_lift (some (equals' he)))));;
+low3 (ll3 (int_bind (int_lift (set eo))) (rr3 (lift (lift equals')) (int_lift (some (equals' he)))));;
 
 (*roofing*)
 (*only makes sense to bind into sthg if you scope over it*)
@@ -507,18 +511,19 @@ low3 (ll3 (lift (some (equals' he))) (int_lift (rr (lift equals') (set eo))));;
 
 
 
+low3 (ll3 (int_bind (int_lift eo)) (rr3 (lift (lift equals)) (lift he')));;
+low3 (ll3 ((int_lift eo)) (rr3 (lift (lift equals)) (lift he')));;
 
 
 
 
 
 
-let sum15 x y z = bind x (fun x' -> bind y (fun y' -> bind z (fun z' s -> [unit (x'+y'+z'=15) s])));;
+let sum15 x y z = bind' x (fun x' -> bind' y (fun y' -> bind' z (fun z' s -> [unit (x'+y'+z'=15) s])));;
 
-let int_lift h c s = h (fun x s' -> c (fun k -> k x) s) s;;
-low3 (ll3 (lift he') (int_lift (rr (rr (lift sum15) (set eo)) (some (equals he)))));;
-low3 (ll3 (lift (lift (unit 3))) (int_lift (rr (rr (lift sum15) (set so)) (some (equals he)))));;
-low3 (ll3 (lift (lift (unit 3))) (rr3 (rr3 (lift (lift sum15)) (set3 so)) (lift (some (equals he)))));;
+low3 (ll3 (lift he') (int_lift (rr (rr (lift sum15) (set eo)) (some (equals' he)))));;
+low3 (ll3 (lift (lift (unit 3))) (int_lift (rr (rr (lift sum15) (set so)) (set (some (equals he))))));;
+low3 (ll3 (lift (lift (unit 3))) (rr3 (rr3 (lift (lift sum15)) (set3 so)) (lift (set (some (equals he))))));;
 
 
 (*need a lower type-shifter?*)
@@ -541,3 +546,101 @@ let low_bind f x = f (fun c -> c x);;
 (*only thing to do: check for ditrans's*)
 
 (*system with analog of bind type-shifters*)
+
+
+let ll l r k = l (fun l' -> r (fun r' -> k (r' l')));;
+let rr l r k = l (fun l' -> r (fun r' -> k (l' r')));;
+
+let ll3 l r k =
+  l (fun l' ->  
+    r (fun r' ->
+      k (fun k' ->
+	ll l' r' k'
+      )))
+;;
+
+let rr3 l r k =
+  l (fun l' ->  
+    r (fun r' ->
+      k (fun k' ->
+	rr l' r' k'
+      )))
+;;
+
+low3 (ll3 (lift (lift (unit 3))) (int_lift (rr (rr (lift sum15) (set so)) (set (some (equals he))))));;
+low3 (ll3 (lift (lift (unit 3))) (rr3 (rr3 (lift (lift sum15)) (set3 so)) (lift (set (some (equals he))))));;
+low3 (ll3 (lift (lift (unit 3))) (rr3 (rr3 (lift (lift sum15)) (set3 so)) (lift (lift he))));;
+
+rr (rr (lift equals') (set eo)) he' (fun x -> x) [];;
+
+(fun k s -> eo (fun x -> bind x (fun x' -> bind he (fun y' s' -> k (equals' (unit y') (unit x') s)))) s) (fun x -> x) [];;
+
+
+
+
+(*THE REAL SHIT*)
+let lo3' f c s = f (fun f' s' -> c (f' (fun x s'' -> x s)) s) s;;
+let lo2' f s = f (fun x s' -> x s) s;;
+let low3' f = lo2' (lo3' f) [];;
+
+(*inverse scope*)
+low3 (ll3 (lift so) (rr3 (lift (lift equals')) (int_lift eo)));;
+
+(*binding*)
+low3' (ll3 (lift (set eo)) (rr3 (lift (lift equals')) (lift he')));;
+low3' (ll3 (lift (set eo)) (rr3 (lift (lift equals')) (lift he')));;
+low3' (ll3 (lift (set eo)) (rr3 (lift (lift equals')) (lift (some (equals' he)))));;
+low3' (ll3 (int_bind (int_lift eo)) (rr3 (lift (lift equals')) (lift (some (equals' he)))));;
+low3' (ll3 (int_lift (set eo)) (rr3 (lift (lift equals')) (int_lift (some (equals' he)))));;
+low3' (ll3 (int_bind (int_lift (set eo))) (rr3 (lift (lift equals')) (int_lift (some (equals' he)))));;
+
+(*roofing*)
+(*only makes sense to bind into sthg if you scope over it*)
+low3' (ll3 (lift (set eo)) (rr3 (lift (lift equals')) (int_lift (some (equals' he)))));;
+low3' (ll3 (lift (set eo)) (int_lift (rr (lift equals') (some (equals' he)))));;
+
+(*strong crossover*)
+low3' (ll3 (lift he') (rr3 (lift (lift equals')) (set3 eo)));;
+low3' (ll3 (lift he') (int_lift (rr (lift equals') (set eo))));;
+low3' (ll3 (lift he') (rr3 (rr3 (lift (lift sum15)) (set3 so)) (lift (lift he))));;
+
+(*weak crossover*)
+low3' (ll3 (lift (some (equals' he))) (rr3 (lift (lift equals')) (set3 eo)));;
+low3' (ll3 (lift (some (equals' he))) (int_lift (rr (lift equals') (set eo))));;
+
+
+(*ditrans*)
+low3' (ll3 (lift (lift (unit 3))) (int_lift (rr (rr (lift sum15) (set so)) (set (some (equals he))))));;
+low3' (ll3 (lift (lift (unit 3))) (rr3 (rr3 (lift (lift sum15)) (set3 so)) (lift (set (some (equals he))))));;
+low3' (ll3 (lift (lift (unit 3))) (rr3 (rr3 (lift (lift sum15)) (set3 so)) (lift he')));;
+
+(*fails*)
+low3' (ll3 (lift (lift (unit 3))) (rr3 (rr3 (lift (lift sum15)) (set3 so)) (lift (lift he))));;
+low3' (ll3 (lift he') (rr3 (rr3 (lift (lift sum15)) (set3 so)) (lift (lift he))));;
+
+(*???*)
+low3' (ll3 (lift (lift he)) (rr3 (rr3 (lift (lift sum15)) (int_bind (int_lift so))) (lift (lift he))));;
+
+lo2' (ll (set eo) (rr (lift equals') he')) [];;
+
+(*no good*)
+lo2' (ll (lift he) (rr (lift equals') (set eo))) [];;
+lo2' (ll he' (rr (lift equals') (set eo))) [];;
+
+(*yes*)
+lo2' (rr (rr (lift equals') (set eo)) he') [];;
+
+(*no*)
+lo2' (rr (rr (lift equals') he') (set eo)) [];;
+lo2' (rr (rr (lift equals') (set eo)) (lift he)) [];;
+lo2' (rr (rr (lift equals') (lift he)) (set eo)) [];;
+
+let evoo c = eo (fun x -> c (fun k -> bind x (fun x' -> k (unit x'))));;
+let evo c = eo (fun x -> c (fun k -> lift x (fun x' -> bind x' (fun x'' -> k (unit x'')))));;
+
+(*no*)
+low3' (rr3 (rr3 (lift (lift equals')) (lift he')) (set3 eo));;
+low3' (rr3 (rr3 (lift (lift equals')) (lift (lift he))) evo);;
+low3' (rr3 (rr3 (lift (lift equals')) (lift (lift he))) evo);;
+
+
