@@ -103,14 +103,15 @@ let drefs_in_common list =
 	  if (List.nth a n) != x
 	  then false 
 	  else is_common_at x b n in
-    if (list = [] || n = min_length list)
+    if n = min_length list
     then drefs
-    else 
-      let a::b = list in
-      let a_n = List.nth a n in
-      if (is_common_at a_n list n)
-      then checker list (a_n::drefs) (n+1) 
-      else checker list drefs (n+1) in
+    else match list with 
+      | [] -> drefs
+      | a::b ->
+	let a_n = List.nth a n in
+	if (is_common_at a_n list n)
+	then checker list (a_n::drefs) (n+1) 
+	else checker list drefs (n+1) in
   List.rev (checker (get_assignments list) [] 0);;
 
 (*every : again, restrictor must be pure*)
