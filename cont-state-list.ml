@@ -157,3 +157,34 @@ let x =
     ) in
 lower x
 ;;
+
+
+
+(*3 level monad for doing quantification with impure restrictors*)
+let lapply3 (m: 'a monad monad) (h: ('a -> 'b) monad monad) : 'b monad monad = 
+  bind m 
+    (fun x -> bind h 
+      (fun f -> unit (lapply x f))
+    )
+;;
+let rapply3 (h: ('a -> 'b) monad monad) (m: 'a monad monad) : 'b monad monad = 
+  bind h 
+    (fun f -> bind m 
+      (fun x -> unit (rapply f x))
+    )
+;;
+let lower3 (f: t monad monad) : (t*s) list = 
+  f [] (fun s x -> x s (fun s x -> [(x,s)]));;
+
+(*impure restrictors : some x <=3 <= 3*)
+let x = 
+  lapply3 
+    (rapply 
+       (unit some) 
+       leq3
+    ) 
+    (unit leq3) in
+lower3 x
+;;
+
+(*binding into impure restrictors?*)
