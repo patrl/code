@@ -65,7 +65,10 @@ let some : (e -> t) -> e monad = fun p s k ->
 let x = 
   lapply 
     (some (fun x -> x = 3 || x > 8))
-    (rapply eq (he 0)) in
+    (rapply 
+       eq 
+       (he 0)
+    ) in
 lower x
 ;;
 
@@ -73,7 +76,10 @@ lower x
 let x = 
   lapply 
     (unit 3)
-    (rapply eq (some (fun x -> x = 3))) in
+    (rapply 
+       eq 
+       (some (fun x -> x = 3))
+    ) in
 lower x
 ;;
 
@@ -122,7 +128,10 @@ let every : (e -> t) -> e monad = fun p s k ->
 let x = 
   lapply 
     (every (fun x -> x = 3 || x > 8))
-    (rapply eq (he 0)) in
+    (rapply 
+       eq 
+       (he 0)
+    ) in
 lower x
 ;;
 
@@ -130,7 +139,10 @@ lower x
 let x = 
   lapply 
     (every (fun x -> x = 3))
-    (rapply eq (he 0)) in
+    (rapply 
+       eq 
+       (he 0)
+    ) in
 lower x
 ;;
 
@@ -138,6 +150,9 @@ lower x
 let x = 
   lapply 
     (every (fun x -> true))
-    (rapply triv (some (fun x -> x = 3))) in
+    (rapply 
+       triv 
+       (some (fun x -> x = 3))
+    ) in
 lower x
 ;;
