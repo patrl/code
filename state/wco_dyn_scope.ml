@@ -3,12 +3,21 @@
 type state = int list;;
 let unit x = fun (s:state) -> (x, s);;
 let unit' x = fun (s:state) -> (x, x::s);;
+let unit_pw x = fun (s:state) -> [(x, x::s)];;
 
 let bind x f = fun s -> 
   let (x', s') = x s in
   f x' s'
 ;;
 
+let bind_pw x f = fun s -> 
+  let apply (a,b) = f a b in
+  List.concat (List.map apply (x s))
+;;
+
+let bind' x f = fun s -> 
+  let (x', s') = x s in
+  f x' s;;
 
 (*some useful operations*)
 let rec truthy list = match list with 
@@ -108,7 +117,7 @@ let every p q s =
   if forall test then [(true, s)] else []
 ;;
 
-(*???*)
+(*equivalently*)
 let every' p q = neg (some p (fun x -> neg (q x)));;
 (*seems to work as well*)
 
@@ -450,10 +459,10 @@ let int_lift h c = h (fun x -> c (fun k -> k x));;
 let low f c = f (fun f' -> c (f' (fun x -> x)));;
 let low3 f = low f (fun x -> x) [];;
 
-let set f c = f (fun x -> bind x (fun x' -> c (unit x')));;
-let set3 f c = f (fun x -> c (fun k -> bind x (fun x' -> k (unit x'))));;
+let set f c = f (fun x -> bind x (fun x' -> c x));;
+let set3 f c = f (fun x -> c (fun k -> bind x (fun x' -> k x)));;
 let int_bind g c = 
-  g (fun f -> c (fun k -> bind (f (fun x -> x)) (fun x' -> k (unit x'))));;
+  g (fun f -> c (fun k -> bind (f (fun x -> x)) (fun x' -> k (f (fun x -> x)))));;
 
 let ll3 l r k s =
   l (fun l' ->  
@@ -471,10 +480,6 @@ let rr3 l r k s =
       )) s
 ;;
 
-
-let bind' x f = fun s -> 
-  let (x', s') = x s in
-  f x' s;;
 
 let equals' r l s = 
   [bind' l (fun x -> 
@@ -584,7 +589,9 @@ let lo2' f s = f (fun x s' -> x s) s;;
 let low3' f = lo2' (lo3' f) [];;
 
 (*inverse scope*)
-low3 (ll3 (lift so) (rr3 (lift (lift equals')) (int_lift eo)));;
+low3' (ll3 (lift so) (rr3 (lift (lift equals')) (int_lift eo)));;
+low3' (ll3 (lift (set so)) (rr3 (lift (lift equals')) (int_lift (set eo))));;
+low3' (ll3 (lift (set so)) (rr3 (lift (lift equals')) (int_bind (int_lift (set eo)))));;
 
 (*binding*)
 low3' (ll3 (lift (set eo)) (rr3 (lift (lift equals')) (lift he')));;
@@ -644,3 +651,55 @@ low3' (rr3 (rr3 (lift (lift equals')) (lift (lift he))) evo);;
 low3' (rr3 (rr3 (lift (lift equals')) (lift (lift he))) evo);;
 
 
+let ex p s = 
+  let checker x = 
+    let new_list = p (unit x) s in
+    if truthy (p (unit x) s)
+    then List.concat (List.map (fun (a,b) -> if a then [(a,x::b)] else []) new_list)
+    else [] in
+  List.concat (List.map checker univ);;
+
+let sum p q = bind_pw (ex p) (fun t -> bind he (fun x -> q (unit x)));;
+
+
+let lo3'' f c s = f (fun f' s' -> c (f' (fun x s'' -> x s)) s) s;;
+let lo2'' f s = f (fun x s' -> x s) s;;
+let low3'' f = lo2'' (lo3'' f) [];;
+
+(*NB*)
+low3'' (ll3 (set3 so) (rr3 (lift (lift equals')) (lift he')));;
+
+equals (unit 2) (unit' 2) [];;
+
+lo2'' (ll (set so) (lift (equals' (unit 2)))) [];;
+
+(*is it really necessary to have lo2 wipe shit out?*)
+
+(*YOU HAVE TO raise sentences back up to bind into them*)
+(*binding only happens on the scope layer!*)
+(*can always gather up state from non-crossover version*)
+(*stuff NEVER LOWERS until the very end*)
+
+
+(*no, need lexical relations to add to stack*)
+
+let equals'' r l s = 
+  let s1 = snd (l s) in
+  let s2 = snd (r s) in
+  [bind' l (fun x -> 
+    bind' r (fun y -> 
+      unit (x = y))) (s1@s2)]
+;;
+low3' (ll3 (int_lift so) (lift (lift (equals' (unit 2)))));;
+low3' (ll3 (int_lift so) (lift (lift (equals'' (unit 2)))));;
+(*makes certain drefs get output*)
+(*enables lowering*)
+(*scope is separate, pooped out through relation*)
+(*emphasize how that's the simplest sort of dynamic machine*)
+(*only side effect is output*)
+(*then add continuations levels to characterize composition, where scope is relevant*)
+
+(*cf PLA*)
+
+
+low3' (ll3 (int_bind (int_lift so)) (lift (lift (equals'' (unit 2)))));;

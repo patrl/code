@@ -15,7 +15,7 @@
 (*exc scoping indefs?*)
 (*type-shifter that pointwise applies elements of a non-det set*)
 
-
+type state = int list;;
 type prop = state -> (bool * state) list;;
 
 let pw (op:prop -> prop) (p:prop) : prop = fun s -> 
