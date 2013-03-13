@@ -27,7 +27,7 @@ let rapply (h: ('a -> 'b) monad) (m: 'a monad) : 'b monad =
 ;;
 
 let lower (f: t monad) : (t * s) list =
-  f [] (fun s k -> [(k,s)])
+  f [] (fun s x -> [(x,s)])
 ;;
 let truthy (ls: (t * s) list) : bool = 
   List.exists (fun (a,b) -> a) ls
