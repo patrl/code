@@ -2,15 +2,14 @@ type e = int
 type t = bool
 type s = int list
 type 'a monad = 
-    s -> 
-    (s -> 'a -> (t * s) list) -> 
-    (t * s) list
+    ('a -> s -> (t * s) list) -> 
+    s -> (t * s) list
 ;;
 
-let unit (a: 'a) : 'a monad = fun s k -> k s a
+let unit (a: 'a) : 'a monad = fun k -> k a
 ;;
 let bind (a: 'a monad) (f: 'a -> 'b monad) : 'b monad = 
-  fun s k -> a s (fun s' x -> f x s' k)
+  fun k -> a (fun x -> f x k)
 ;;
 
 let lapply (m: 'a monad) (h: ('a -> 'b) monad) : 'b monad = 
@@ -27,15 +26,15 @@ let rapply (h: ('a -> 'b) monad) (m: 'a monad) : 'b monad =
 ;;
 
 let lower (f: t monad) : (t * s) list =
-  f [] (fun s x -> [(x,s)])
+  f (fun x s -> [(x,s)]) []
 ;;
 let truthy (ls: (t * s) list) : bool = 
   List.exists (fun (a,b) -> a) ls
 ;;
 
 let univ : e list = [1;2;3;4;5;6;7;8;9;10];;
-let one : e monad = fun s k -> k (s@[1]) 1;;
-let he n : e monad = fun s k -> k s (List.nth s n);;
+let one : e monad = fun k s -> k 1 (s@[1]);;
+let he n : e monad = fun k s -> k (List.nth s n) s;;
 
 let leq3 : (e -> t) monad =
   unit (fun x -> x <= 3)
@@ -53,10 +52,10 @@ lower x
 ;;
 
 (*some : restrictor must be pure : parallels B&S/Shan*)
-let some : (e -> t) -> e monad = fun p s k ->
+let some : (e -> t) -> e monad = fun p k s ->
   List.concat 
     (List.map 
-       (fun x -> k (s@[x]) x) 
+       (fun x -> k x (s@[x])) 
        (List.filter p univ)
     )
 ;;
@@ -115,11 +114,11 @@ let drefs_in_common list =
   List.rev (checker (get_assignments list) [] 0);;
 
 (*every : again, restrictor must be pure*)
-let every : (e -> t) -> e monad = fun p s k ->
+let every : (e -> t) -> e monad = fun p k s ->
   let ls = 
     List.concat 
       (List.map 
-	 (fun x -> k (s@[x]) x) 
+	 (fun x -> k x (s@[x])) 
 	 (List.filter p univ)
       ) in
   [(List.for_all (fun (a,b) -> a) ls, drefs_in_common ls)]
@@ -174,7 +173,7 @@ let rapply3 (h: ('a -> 'b) monad monad) (m: 'a monad monad) : 'b monad monad =
     )
 ;;
 let lower3 (f: t monad monad) : (t*s) list = 
-  f [] (fun s x -> x s (fun s x -> [(x,s)]));;
+  f (fun x -> x (fun y s -> [(y,s)])) [];;
 
 (*impure restrictors : some x <=3 <= 3*)
 let x = 
