@@ -50,37 +50,6 @@ let x = lapply one leq3 in
 lower x
 ;;
 
-(*some : restrictor must be pure : parallels B&S/Shan*)
-let some : (e -> t) -> e monad = fun p k s ->
-  List.concat 
-    (List.map 
-       (fun x -> k x (s@[x]))
-       (List.filter p univ)
-    )
-;;
-
-(*some x = 3 / > 8 equals itself*)
-let x = 
-  lapply 
-    (some (fun x -> x = 3 || x > 8))
-    (rapply 
-       eq 
-       (he 0)
-    ) in
-lower x
-;;
-
-(*3 equals some x = 3*)
-let x = 
-  lapply 
-    (unit 3)
-    (rapply 
-       eq 
-       (some (fun x -> x = 3))
-    ) in
-lower x
-;;
-
 (*stack flattening : there must be a better way!*)
 let drefs_in_common list =
   let rec get_assignments list = 
@@ -112,88 +81,6 @@ let drefs_in_common list =
 	else checker list drefs (n+1) in
   List.rev (checker (get_assignments list) [] 0);;
 
-(*every : again, restrictor must be pure*)
-let every : (e -> t) -> e monad = fun p k s ->
-  let ls = 
-    List.concat 
-      (List.map 
-	 (fun x -> k x (s@[x])) 
-	 (List.filter p univ)
-      ) in
-  [(List.for_all (fun (a,b) -> a) ls, drefs_in_common ls)]
-;;
-
-(*every x = 3 / > 8 equals itself : no drefs project*)
-let x = 
-  lapply 
-    (every (fun x -> x = 3 || x > 8))
-    (rapply 
-       eq 
-       (he 0)
-    ) in
-lower x
-;;
-
-(*every x = 3 equals itself : dref projects*)
-let x = 
-  lapply 
-    (every (fun x -> x = 3))
-    (rapply 
-       eq 
-       (he 0)
-    ) in
-lower x
-;;
-
-(*everyone TRIVs some x = 3 : dref projects*)
-let x = 
-  lapply 
-    (every (fun x -> true))
-    (rapply 
-       triv 
-       (some (fun x -> x = 3))
-    ) in
-lower x
-;;
-
-
-
-(*3 level monad for doing quantification with impure restrictors*)
-let lapply3 (m: 'a monad monad) (h: ('a -> 'b) monad monad) : 'b monad monad = 
-  bind m 
-    (fun x -> bind h 
-      (fun f -> unit (lapply x f))
-    )
-;;
-let rapply3 (h: ('a -> 'b) monad monad) (m: 'a monad monad) : 'b monad monad = 
-  bind h 
-    (fun f -> bind m 
-      (fun x -> unit (rapply f x))
-    )
-;;
-let lower3 (f: t monad monad) : (t*s) list = 
-  f (fun x -> x (fun y s -> [(y,s)])) [];;
-
-(*impure restrictors : some x <=3 <= 3*)
-let x = 
-  lapply3 
-    (rapply 
-       (unit some) 
-       leq3
-    ) 
-    (unit leq3) in
-lower3 x
-;;
-
-(*binding into impure restrictors?
-let some : ((e -> t) monad -> e) monad = fun k s ->
- List.concat 
-    (List.map 
-       (fun x -> k x (s@[x]))
-       (List.filter p univ)
-    )
-;;*)
-
 (*enumerates all the [necessary] choice functions*)
 let cfs ls =
   let rec p_to_list p ls = 
@@ -216,7 +103,7 @@ let cfs ls =
   add_cf 0
 ;;
 
-let some' : ((e -> t) -> e) monad = 
+let some : ((e -> t) -> e) monad = 
   fun k s ->
     List.concat 
       (List.map 
@@ -228,10 +115,10 @@ let some' : ((e -> t) -> e) monad =
 let up (m: e monad) : e monad = fun k -> 
   m (fun x s -> k x (s@[x]));;
 
-(*some' x<=3 equals itself*)
+(*some x<=3 equals itself*)
 let x = 
   lapply 
-    (up (rapply some' leq3)) 
+    (up (rapply some leq3)) 
     (rapply
        eq
        (he 0)
@@ -239,7 +126,7 @@ let x =
 lower x
 ;;
 
-let every' : ((e -> t) -> e) monad = fun k s ->
+let every : ((e -> t) -> e) monad = fun k s ->
   let ls = 
     List.concat 
       (List.map 
@@ -252,7 +139,7 @@ let every' : ((e -> t) -> e) monad = fun k s ->
 (*every x<=3 equals itself*)
 let x = 
   lapply 
-    (up (rapply every' leq3)) 
+    (up (rapply every leq3)) 
     (rapply
        eq
        (he 0)
@@ -260,23 +147,22 @@ let x =
 lower x
 ;;
 
-(*deterministic drefs still percolate*)
+(*deterministic drefs percolate*)
 let x = 
   lapply 
-    (up (rapply every' leq3)) 
+    (up (rapply every leq3)) 
     (rapply
        eq
-       (up (rapply some' (rapply eq (unit 3))))
+       (up (rapply some (rapply eq (unit 3))))
     ) in
 lower x
 ;;
 
-(**using the side-effects tier**)
-
 (*donkey binding out of DP*)
+(*every x equal to some y<=3 equals it*)
 let x = 
   lapply 
-    (up (rapply every' (rapply eq (up (rapply some' leq3))))) 
+    (up (rapply every (rapply eq (up (rapply some leq3))))) 
     (rapply
        eq
        (he 1)
@@ -287,22 +173,15 @@ lower x
 (*binding into DP*)
 let x = 
   lapply 
-    (up (rapply every' leq3)) 
+    (up (rapply every leq3)) 
     (rapply
        eq
-       (rapply some' (rapply eq (he 0)))
+       (rapply some (rapply eq (he 0)))
     ) in
 lower x
 ;;
 
-(*cross-sentential anaphora*)
-let x = 
-  lapply
-    (up (rapply some' leq3))
-    leq3 in
-lower x
-;;
-
+(**cross-sentential anaphora**)
 let dyn_bind (a: 'a monad) (f: 'a -> 'b monad) : 'b monad = 
   fun k s -> 
     let lowered = (a (fun x s -> [(x,s)]) s) in
@@ -317,11 +196,11 @@ let sentence_apply (a: t monad) (h: (t -> t) monad) : t monad =
 ;;
 
 (*some x<=3 <=3 ; it_0's <=3*)
-(*NB: substituting every' for some' produces an error*)
+(*NB: substituting every for some produces an error*)
 let x = 
   sentence_apply
     (lapply
-       (up (rapply some' leq3))
+       (up (rapply some leq3))
        leq3
     )
     (rapply
@@ -332,3 +211,5 @@ lower x
 ;;
 
 (*note that dyn_bind gives indefiniteness scope over the continuation but not universalness. so if dyn_bind and bind are both available, this predicts, correctly, that indefinites can take 'exceptional scope' alongside 'normal scope'--of both the quantificational and binding varieties--while universals cannot ; but need to think more about the implications of this [still need theory of islands, etc]*)
+
+(*think more about stacks of unequal lengths*)
