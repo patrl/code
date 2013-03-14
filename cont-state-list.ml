@@ -194,7 +194,7 @@ let some : ((e -> t) monad -> e) monad = fun k s ->
     )
 ;;*)
 
-(*enumerates all the choice functions*)
+(*enumerates all the [necessary] choice functions*)
 let cfs ls =
   let rec p_to_list p ls = 
     match ls with 
@@ -270,3 +270,66 @@ let x =
     ) in
 lower x
 ;;
+
+(**using the side-effects tier**)
+
+(*donkey binding out of DP*)
+let x = 
+  lapply 
+    (up (rapply every' (rapply eq (up (rapply some' leq3))))) 
+    (rapply
+       eq
+       (he 1)
+    ) in
+lower x
+;;
+
+(*binding into DP*)
+let x = 
+  lapply 
+    (up (rapply every' leq3)) 
+    (rapply
+       eq
+       (rapply some' (rapply eq (he 0)))
+    ) in
+lower x
+;;
+
+(*cross-sentential anaphora*)
+let x = 
+  lapply
+    (up (rapply some' leq3))
+    leq3 in
+lower x
+;;
+
+let dyn_bind (a: 'a monad) (f: 'a -> 'b monad) : 'b monad = 
+  fun k s -> 
+    let lowered = (a (fun x s -> [(x,s)]) s) in
+    List.concat (List.map (fun (a,b) -> f a k b) lowered)
+;;
+
+let sentence_apply (a: t monad) (h: (t -> t) monad) : t monad = 
+  dyn_bind a 
+    (fun p -> bind h 
+      (fun f -> unit (f p))
+    )
+;;
+
+(*some x<=3 <=3 ; it_0's <=3*)
+(*NB: substituting every' for some' produces an error*)
+let x = 
+  sentence_apply
+    (lapply
+       (up (rapply some' leq3))
+       leq3
+    )
+    (rapply
+       (unit (&))
+       (lapply (he 0) leq3)
+    ) in
+lower x
+;;
+
+(*note that dyn_bind gives indefiniteness scope over the continuation but not universalness*)
+(*so if dyn_bind and bind are both available, this predicts, correctly, that indefinites can take 'exceptional scope' alongside 'normal scope'--of both the quantificational and binding varieties--while universals cannot*)
