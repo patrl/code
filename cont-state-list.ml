@@ -259,3 +259,14 @@ let x =
     ) in
 lower x
 ;;
+
+(*deterministic drefs still percolate*)
+let x = 
+  lapply 
+    (up (rapply every' leq3)) 
+    (rapply
+       eq
+       (up (rapply some' (rapply eq (unit 3))))
+    ) in
+lower x
+;;
