@@ -25,7 +25,7 @@ let rapply (h: ('a -> 'b) monad) (m: 'a monad) : 'b monad =
 ;;
 
 let lower (f: t monad) : (t * s) list =
-  f (fun x s -> [(x,s)]) []
+  f (fun x s -> [(x,s)]) []     (*the continuation here is state.list's unit!*)
 ;;
 let truthy (ls: (t * s) list) : bool = 
   List.exists (fun (a,b) -> a) ls
@@ -54,6 +54,7 @@ lower x
 (**quantification using choice functions**)
 
 (*first, enumerate all the [necessary] choice functions*)
+(*cfs get harmlessly repeated when |univ| > |p|*)
 let cfs ls =
   let rec p_to_list p ls = 
     match ls with 
@@ -87,7 +88,8 @@ let some : ((e -> t) -> e) monad =
 
 (*giving stuff an anaphoric charge -- could be polymorphic with a more flex stack*)
 let up (m: e monad) : e monad = fun k -> 
-  m (fun x s -> k x (s@[x]));;
+  m (fun x s -> k x (s@[x]))
+;;
 
 (*some x<=3 equals itself*)
 let x = 
@@ -131,16 +133,13 @@ let drefs_in_common list =
 	if (is_common_at a_n list n)
 	then checker list (a_n::drefs) (n+1) 
 	else checker list drefs (n+1) in
-  List.rev (checker (get_assignments list) [] 0);;
+  List.rev (checker (get_assignments list) [] 0)
+;;
 
-let every : ((e -> t) -> e) monad = fun k s ->
-  let ls = 
-    List.concat 
-      (List.map 
-	 (fun f -> k f s) 
-	 (cfs univ)
-      ) in
-  [(List.for_all (fun (a,b) -> a) ls, drefs_in_common ls)]
+let every : ((e -> t) -> e) monad = 
+  fun k s ->
+    let ls = some k s in
+    [(List.for_all (fun (a,b) -> a) ls, drefs_in_common ls)]
 ;;
 
 (*every x<=3 equals itself*)
@@ -172,7 +171,7 @@ let x =
     (up (rapply every (rapply eq (up (rapply some leq3))))) 
     (rapply
        eq
-       (he 1)
+       (he 1)               (*he 0 would grab the subject*)
     ) in
 lower x
 ;;
@@ -205,7 +204,7 @@ let sentence_apply (a: t monad) (h: (t -> t) monad) : t monad =
 ;;
 
 (*some x<=3 <= 3 ; it's <= 3*)
-(*NB: substituting every for some produces an error*)
+(*NB: substituting every for some correctly throws an exception*)
 let x = 
   sentence_apply
     (lapply
