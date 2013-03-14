@@ -1,9 +1,8 @@
 type e = int
 type t = bool
 type s = int list
-type 'a monad = 
-    ('a -> s -> (t * s) list) -> 
-    s -> (t * s) list
+type 'a k = 'a -> s -> (t * s) list
+type 'a monad = 'a k -> s -> (t * s) list
 ;;
 
 let unit (a: 'a) : 'a monad = fun k -> k a
@@ -55,7 +54,7 @@ lower x
 let some : (e -> t) -> e monad = fun p k s ->
   List.concat 
     (List.map 
-       (fun x -> k x (s@[x])) 
+       (fun x -> k x (s@[x]))
        (List.filter p univ)
     )
 ;;
@@ -186,4 +185,77 @@ let x =
 lower3 x
 ;;
 
-(*binding into impure restrictors?*)
+(*binding into impure restrictors?
+let some : ((e -> t) monad -> e) monad = fun k s ->
+ List.concat 
+    (List.map 
+       (fun x -> k x (s@[x]))
+       (List.filter p univ)
+    )
+;;*)
+
+(*enumerates all the choice functions*)
+let cfs ls =
+  let rec p_to_list p ls = 
+    match ls with 
+      | [] -> []
+      | a::b -> 
+	if p a 
+	then a::(p_to_list p b)
+	else p_to_list p b in
+  let length = List.length ls in
+  let cf_n = fun n p -> 
+    let p_list = p_to_list p univ in
+    if n >= List.length p_list 
+    then List.nth p_list (List.length p_list - 1)
+    else List.nth p_list n in
+  let rec add_cf n = 
+    if n = length
+    then []
+    else (cf_n n)::(add_cf (n+1)) in
+  add_cf 0
+;;
+
+let some' : ((e -> t) -> e) monad = 
+  fun k s ->
+    List.concat 
+      (List.map 
+	 (fun f -> k f s)
+	 (cfs univ)
+      )
+;;
+
+let up (m: e monad) : e monad = fun k -> 
+  m (fun x s -> k x (s@[x]));;
+
+(*some' x<=3 equals itself*)
+let x = 
+  lapply 
+    (up (rapply some' leq3)) 
+    (rapply
+       eq
+       (he 0)
+    ) in
+lower x
+;;
+
+let every' : ((e -> t) -> e) monad = fun k s ->
+  let ls = 
+    List.concat 
+      (List.map 
+	 (fun f -> k f s) 
+	 (cfs univ)
+      ) in
+  [(List.for_all (fun (a,b) -> a) ls, drefs_in_common ls)]
+;;
+
+(*every x<=3 equals itself*)
+let x = 
+  lapply 
+    (up (rapply every' leq3)) 
+    (rapply
+       eq
+       (he 0)
+    ) in
+lower x
+;;
