@@ -50,6 +50,58 @@ let x = lapply one leq3 in
 lower x
 ;;
 
+
+(**quantification using choice functions**)
+
+(*first, enumerate all the [necessary] choice functions*)
+let cfs ls =
+  let rec p_to_list p ls = 
+    match ls with 
+      | [] -> []
+      | a::b -> 
+	if p a 
+	then a::(p_to_list p b)
+	else p_to_list p b in
+  let length = List.length ls in
+  let cf_n = fun n p -> 
+    let p_list = p_to_list p univ in
+    if n >= List.length p_list 
+    then List.nth p_list (List.length p_list - 1)
+    else List.nth p_list n in
+  let rec add_cf n = 
+    if n = length
+    then []
+    else (cf_n n)::(add_cf (n+1)) in
+  add_cf 0
+;;
+
+(*some*)
+let some : ((e -> t) -> e) monad = 
+  fun k s ->
+    List.concat 
+      (List.map 
+	 (fun f -> k f s)
+	 (cfs univ)
+      )
+;;
+
+(*giving stuff an anaphoric charge -- could be polymorphic with a more flex stack*)
+let up (m: e monad) : e monad = fun k -> 
+  m (fun x s -> k x (s@[x]));;
+
+(*some x<=3 equals itself*)
+let x = 
+  lapply 
+    (up (rapply some leq3)) 
+    (rapply
+       eq
+       (he 0)
+    ) in
+lower x
+;;
+
+(*every*)
+
 (*stack flattening : there must be a better way!*)
 let drefs_in_common list =
   let rec get_assignments list = 
@@ -80,51 +132,6 @@ let drefs_in_common list =
 	then checker list (a_n::drefs) (n+1) 
 	else checker list drefs (n+1) in
   List.rev (checker (get_assignments list) [] 0);;
-
-(*enumerates all the [necessary] choice functions*)
-let cfs ls =
-  let rec p_to_list p ls = 
-    match ls with 
-      | [] -> []
-      | a::b -> 
-	if p a 
-	then a::(p_to_list p b)
-	else p_to_list p b in
-  let length = List.length ls in
-  let cf_n = fun n p -> 
-    let p_list = p_to_list p univ in
-    if n >= List.length p_list 
-    then List.nth p_list (List.length p_list - 1)
-    else List.nth p_list n in
-  let rec add_cf n = 
-    if n = length
-    then []
-    else (cf_n n)::(add_cf (n+1)) in
-  add_cf 0
-;;
-
-let some : ((e -> t) -> e) monad = 
-  fun k s ->
-    List.concat 
-      (List.map 
-	 (fun f -> k f s)
-	 (cfs univ)
-      )
-;;
-
-let up (m: e monad) : e monad = fun k -> 
-  m (fun x s -> k x (s@[x]));;
-
-(*some x<=3 equals itself*)
-let x = 
-  lapply 
-    (up (rapply some leq3)) 
-    (rapply
-       eq
-       (he 0)
-    ) in
-lower x
-;;
 
 let every : ((e -> t) -> e) monad = fun k s ->
   let ls = 
@@ -171,6 +178,7 @@ lower x
 ;;
 
 (*binding into DP*)
+(*every x<=3 equals something equal to it*)
 let x = 
   lapply 
     (up (rapply every leq3)) 
@@ -182,6 +190,7 @@ lower x
 ;;
 
 (**cross-sentential anaphora**)
+(*special bind and application for indefiniteness*)
 let dyn_bind (a: 'a monad) (f: 'a -> 'b monad) : 'b monad = 
   fun k s -> 
     let lowered = (a (fun x s -> [(x,s)]) s) in
@@ -195,7 +204,7 @@ let sentence_apply (a: t monad) (h: (t -> t) monad) : t monad =
     )
 ;;
 
-(*some x<=3 <=3 ; it_0's <=3*)
+(*some x<=3 <= 3 ; it's <= 3*)
 (*NB: substituting every for some produces an error*)
 let x = 
   sentence_apply
@@ -211,5 +220,9 @@ lower x
 ;;
 
 (*note that dyn_bind gives indefiniteness scope over the continuation but not universalness. so if dyn_bind and bind are both available, this predicts, correctly, that indefinites can take 'exceptional scope' alongside 'normal scope'--of both the quantificational and binding varieties--while universals cannot ; but need to think more about the implications of this [still need theory of islands, etc]*)
+
+(*dyn_bind only applies to propositions*)
+
+(*crossover, reconstruction*)
 
 (*think more about stacks of unequal lengths*)
