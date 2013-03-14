@@ -27,9 +27,6 @@ let rapply (h: ('a -> 'b) monad) (m: 'a monad) : 'b monad =
 let lower (f: t monad) : (t * s) list =
   f (fun x s -> [(x,s)]) []     (*the continuation here is state.list's unit!*)
 ;;
-let truthy (ls: (t * s) list) : bool = 
-  List.exists (fun (a,b) -> a) ls
-;;
 
 let univ : e list = [1;2;3;4;5;6;7;8;9;10];;
 let one : e monad = fun k s -> k 1 (s@[1]);;

@@ -113,3 +113,8 @@ let some : ((e -> t) monad -> e) monad = fun k s ->
        (List.filter p univ)
     )
 ;;*)
+
+
+let truthy (ls: (t * s) list) : bool = 
+  List.exists (fun (a,b) -> a) ls
+;;
