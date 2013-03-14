@@ -331,5 +331,4 @@ let x =
 lower x
 ;;
 
-(*note that dyn_bind gives indefiniteness scope over the continuation but not universalness*)
-(*so if dyn_bind and bind are both available, this predicts, correctly, that indefinites can take 'exceptional scope' alongside 'normal scope'--of both the quantificational and binding varieties--while universals cannot*)
+(*note that dyn_bind gives indefiniteness scope over the continuation but not universalness. so if dyn_bind and bind are both available, this predicts, correctly, that indefinites can take 'exceptional scope' alongside 'normal scope'--of both the quantificational and binding varieties--while universals cannot ; but need to think more about the implications of this [still need theory of islands, etc]*)
