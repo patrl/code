@@ -102,41 +102,36 @@ lower x
 (*every*)
 
 (*stack flattening : there must be a better way!*)
-let drefs_in_common list =
-  let rec get_assignments list = 
-    match list with 
+let compress ls = 
+  let rec intersect l1 l2 = 
+    match l1 with 
       | [] -> []
-      | h::t -> (snd h)::(get_assignments t) in
-  let rec min_length l = 
-    match l with 
-      | [] -> 0
-      | a::[] -> List.length a
-      | a::b ->
-	min (List.length a) (min_length b) in
-  let rec checker list drefs n = 
-    let rec is_common_at x list n = 
-      match list with 
-	| [] -> true
-	| a::b -> 
-	  if (List.nth a n) != x
-	  then false 
-	  else is_common_at x b n in
-    if n = min_length list
-    then drefs
-    else match list with 
-      | [] -> drefs
-      | a::b ->
-	let a_n = List.nth a n in
-	if (is_common_at a_n list n)
-	then checker list (a_n::drefs) (n+1) 
-	else checker list drefs (n+1) in
-  List.rev (checker (get_assignments list) [] 0)
+      | a::b -> 
+	if List.exists (fun x -> x = a) l2
+	then a::(intersect b l2)
+	else intersect b l2
+  in
+  let ints_n n = 
+    let rec add m n = 
+      if m = n then [m]
+      else m::(add (m+1) n) in
+    add 1 n
+  in
+  let indexed = 
+    List.map 
+      (fun (a,b) -> List.combine (ints_n (List.length b)) b) 
+      ls in
+  match indexed with 
+    | [] -> []
+    | a::b -> 
+      let pairs = List.fold_left intersect a b in
+      List.map (fun (a,b) -> b) pairs
 ;;
 
 let every : ((e -> t) -> e) monad = 
   fun k s ->
     let ls = some k s in
-    [(List.for_all (fun (a,b) -> a) ls, drefs_in_common ls)]
+    [(List.for_all (fun (a,b) -> a) ls, compress ls)]
 ;;
 
 (*every x<=3 equals itself*)
@@ -222,3 +217,5 @@ lower x
 (*crossover, reconstruction*)
 
 (*think more about stacks of unequal lengths*)
+
+(*RNR*)
