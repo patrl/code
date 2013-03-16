@@ -249,6 +249,7 @@ let x =
 lower x
 ;;
 
+(**if a relational noun is partial and bound into by a quantifier, the presupposition projects universally**)
 let x = 
   let f = 
     let g = fun x ->
