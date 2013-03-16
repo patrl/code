@@ -38,8 +38,11 @@ let leq3 : (e -> t) monad =
 let eq : (e -> e -> t) monad = 
   unit (fun x y -> x = y)
 ;;
-let triv : (e -> e -> t) monad = 
-  unit (fun x y -> true)
+let lt : (e -> e -> t) monad =
+  unit (fun x y -> y < x)
+;;
+let triv : (e -> t) monad = 
+  unit (fun x -> true)
 ;;
 
 (*1 <= 3*)
@@ -219,3 +222,50 @@ lower x
 (*think more about stacks of unequal lengths*)
 
 (*RNR*)
+
+(*
+
+  some exception errors -- quantifiers presuppose nonemptiness of their domain -- when this presupposition is bound into, it projects universally (heim 1983).
+
+let x =
+  lapply
+    (up (unit 10))
+    (rapply eq
+       (up (rapply 
+	  some 
+	  (rapply eq (he 0))
+	))
+    ) in
+lower x
+;;
+
+let x = 
+  lapply
+    (rapply 
+       some 
+       (unit (fun x -> x > 10))
+    )
+    triv in
+lower x
+;;
+
+let x = 
+  let f = 
+    let g = fun x ->
+      match x with 
+	| 1 -> 2
+	| 2 -> 3 in
+    unit g in
+  lapply
+    (up (rapply some triv))
+    (rapply 
+       lt
+       (lapply (he 0) f)
+    ) in
+lower x
+;;
+
+
+  
+
+*)
