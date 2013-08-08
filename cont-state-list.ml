@@ -105,31 +105,16 @@ lower x
 (*every*)
 
 (*stack flattening : there must be a better way!*)
-let compress ls = 
-  let rec intersect l1 l2 = 
-    match l1 with 
-      | [] -> []
-      | a::b -> 
-	if List.exists (fun x -> x = a) l2
-	then a::(intersect b l2)
-	else intersect b l2
+let compress pairs =
+  let rec c l r = match (l, r) with
+    | (h::t, h'::t') -> (if h==h' then h else -1) :: c t t'
+    | _ -> []
   in
-  let ints_n n = 
-    let rec add m n = 
-      if m = n then [m]
-      else m::(add (m+1) n) in
-    add 1 n
-  in
-  let indexed = 
-    List.map 
-      (fun (a,b) -> List.combine (ints_n (List.length b)) b) 
-      ls in
-  match indexed with 
-    | [] -> []
-    | a::b -> 
-      let pairs = List.fold_left intersect a b in
-      List.map (fun (a,b) -> b) pairs
+    match List.map snd pairs with
+      | h::t -> List.filter ((<) 0) (List.fold_left c h t)
+      | _ -> []
 ;;
+
 
 let every : ((e -> t) -> e) monad = 
   fun k s ->
@@ -267,6 +252,6 @@ lower x
 ;;
 
 
-  
-
+let noo k s : ((e -> t) monad -> e) monad = 
+  List.f
 *)
