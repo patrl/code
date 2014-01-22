@@ -1,193 +1,160 @@
-//customize these
-var imgs = ["i4", "i5", "i6", "i7", "i8", "i9"];
-var imgDir = "../pairs-compressed/";
-//end customize
-var imgUrls = imgs.map(function(s) {
-	return imgDir + s + ".jpg";
-});
-var makeDivLeft = function(img) {
-		return '<div class="showNew" id="' + img + '" style="left:-100%;"><img src="' + imgDir + img + '.jpg" alt="" id="current"></div>';
-	};
-var makeDivRight = function(img) {
-		return '<div class="showNew" id="' + img + '" style="left:100%;"><img src="' + imgDir + img + '.jpg" alt="" id="current"></div>';
-	};
-var substitute = function(name, toIncrement) {
-		var index = imgs.indexOf(name);
-		var newIndex = index + toIncrement;
-		if (newIndex >= imgs.length) {
-			return "i4";
-		} else if (newIndex < 0) {
-			return "i9";
+$(function() {
+	//begin customize
+	imgDir = "img/";
+	scaleFactor = 1;
+	sliderOffset = 2;
+	//end customize
+	imgs = $(".php").html().split(".jpg").filter(function(i) {
+		return i !== "";
+	}).sort();
+	imgUrls = imgs.map(function(s) {
+		return imgDir + s + ".jpg";
+	});
+	thumbUrls = imgs.map(function(s) {
+		return imgDir + 'thumbs/' + s + ".jpg";
+	});
+	for (i = 0; i < imgs.length; i++) {
+		if (i === 0) {
+			$(".images").append('<img src="' + imgUrls[i] + '" class="big first" id="' + imgs[i] + '" alt="">');
 		} else {
-			return imgs[newIndex];
+			$(".images").append('<img class="big hidden" id="' + imgs[i] + '" src="" alt="">');
 		}
-	};
-var preLoad = function() { //preload images for nicer transitions
-		$(imgUrls).each(function() {
-			(new Image()).src = this;
-		});
-		console.log("preloading imgs...");
-	};
-var poz = null;
-var getPos = function() { //reconstruction as delayed evaluation!
-		poz = $(".highlighted").position();
-	};
-var goBack = function() {
-		var oldImg = $(".show").attr("id");
-		var newImg = substitute(oldImg, -1);
-		var newDiv = makeDivLeft(newImg);
-		$(".show").animate({
-			left: "100%",
-			opacity: "0"
-		}, 250, function() {
-    		$(this).remove();
-		});
-		$(".container").append(newDiv);
-		$(".showNew").animate({
-			left: "0",
-			opacity: "1"
-		}, 250, function() {
-    		$(this).toggleClass("showNew").toggleClass("show");
-		});
-		$("#" + oldImg + "small, #" + newImg + "small").toggleClass("highlighted");
-		getPos();
-		$(".slider").animate({
-			left: String(poz.left + 2)
-		}, 500);
-	};
-var goForward = function() {
-		var oldImg = $(".show").attr("id");
-		var newImg = substitute(oldImg, 1);
-		var newDiv = makeDivRight(newImg);
-		$(".show").animate({
-			left: "-100%",
-			opacity: "0"
-		}, 250, function() {
-    		$(this).remove();
-		});
-		$(".container").append(newDiv);
-		$(".showNew").animate({
-			left: "0",
-			opacity: "1"
-		}, 250, function() {
-    		$(this).toggleClass("showNew").toggleClass("show");
-		});
-		$("#" + oldImg + "small, #" + newImg + "small").toggleClass("highlighted");
-		getPos();
-		$(".slider").animate({
-			left: String(poz.left + 2)
-		}, 500);
-	};
-$(function() { //on document ready:::
-	$(window).load(function() { //preload images after, hide navigation until, main image loads
-    	preLoad();
-    	$(".thumbs").animate({
-        	opacity: "1"
-    	}, 200);
-	});
-	getPos();
-	$(".slider").css({ //set initial slider position
-		"left": poz.left + 2
-	});
-	var img = $('#current');
-	if (img.prop('complete')) { //set initial heights of container, click-divs; set nav arrow position
-		var initHeight = $("#current").height();
-		$(".container,.show").css({
-			"min-height": initHeight
-		});
-		$(".back,.forward").css({
-			"height": initHeight
-		});
-		$(".arrowleft,.arrowright").css({
-			"top": initHeight / 2 - 10
-		});
-	} else {
-		img.load(function() {
-			var initHeight = $("#current").height();
-			$(".container").css({
-				"min-height": initHeight
-			});
-			$(".back,.forward").css({
-				"height": initHeight
-			});
-			$(".arrowleft,.arrowright").css({
-				"top": initHeight / 2 - 10
-			});
-		});
 	}
-	$(window).resize(function() { //slider, container, click-divs shift w/resize
-		poz = $(".highlighted").position();
-		$(".slider").css({
-			"left": poz.left + 2
+	for (i = 0; i < imgs.length; i++) {
+		if (i === 0) {
+			$(".thumbs").append('<img src="' + thumbUrls[i] + '" id="' + imgs[i] + 'small' + '" class="highlighted" alt="">');
+		} else {
+			$(".thumbs").append('<img src="' + thumbUrls[i] + '" id="' + imgs[i] + 'small' + '" alt="">');
+		}
+	}
+	$(".thumbs").append('<div class="slider transitions"></div>');
+	setWidths = function() {
+		bodyWidth = $("body").width() * scaleFactor;
+		$(".container img,.container").css({
+			"width": bodyWidth
 		});
-		var imgHeight = $("#current").height();
-		$(".container").css({
-			"min-height": imgHeight
+		$(".images").css({
+			"width": imgs.length * bodyWidth
 		});
-		$(".back,.forward").css({
+	};
+	setHeights = function() {
+		var imgHeight = $(".first").height();
+		$(".back,.forward,.container,.images").css({
 			"height": imgHeight
 		});
 		$(".arrowleft,.arrowright").css({
 			"top": imgHeight / 2 - 10
 		});
-	});
-	$(".fadeIn").animate({
-		opacity: "1"
-	}, 200);
-	var lastClick = 0;
-	$(".back").click( //back click behavior
-    	function(event) {
-    		var newClick = event.timeStamp;
-    		var interval = newClick - lastClick;
-    		if (interval > 500) { //wait for 500ms animations to finish, on pain of screwing up slider
-    			goBack();
-    			lastClick = newClick;
-    		}
-	}).hover( //back nav arrow sliding
-    	function() {
-    		$(".arrowleft").animate({
-    			left: "+=50"
-    		}, 500);
-    	}, function() {
-    		$(".arrowleft").animate({
-    			left: "-=50"
-    		}, 500);
-	});
-	$(".forward").click( //forward click behavior
-    	function(event) {
-    		var newClick = event.timeStamp;
-    		var interval = newClick - lastClick;
-    		if (interval > 500) { //wait for 500ms animations to finish, on pain of screwing up slider
-    			goForward();
-    			lastClick = newClick;
-    		}
-	}).hover(
-    	function() {
-    		$(".arrowright").animate({
-    			right: "+=50"
-    		}, 500);
-    	}, function() {
-    		$(".arrowright").animate({
-    			right: "-=50"
-    		}, 500);
-	});
-	var lastPress = 0;
-	var interval = 0;
-	$(document.documentElement).keyup(function(event) { //keyboard navigation
-		var k = event.keyCode;
-		newPress = event.timeStamp;
-		interval = newPress - lastPress;
-		if (k == 37 && interval > 500) { //wait for 500ms animations to finish, on pain of screwing up slider
-			goBack();
-			lastPress = newPress;
-		} else if (k == 39 && interval > 500) {
-			goForward();
-			lastPress = newPress;
+	};
+	setSlider = function() {
+		var poz = $(".highlighted").position();
+		$(".slider").css({
+			"left": poz.left + sliderOffset
+		});
+	};
+	goTo = function(nextImage) {
+		$(".highlighted").toggleClass("highlighted");
+		nextImage.addClass("highlighted");
+		$(".images").css("transform", "translateX(" + nextImage.index() * -bodyWidth + "px)");
+		var toLoad = $("#" + nextImage.attr('id').slice(0, -5));
+		clearInterval(intervalId); //cancel the last-triggered loop
+		if (toLoad.prop('complete') && toLoad.attr('src') !== '') {
+			setSlider();
+		} else {
+			moveSlider();
+			var param = setInterval(moveSlider, 1000);
+			intervalId = param;
+			toLoad.load(function() {
+				if (toLoad.attr('id') === $('.highlighted').attr('id').slice(0, -5)) { //fix setslider bug
+    				clearInterval(param);
+    				clearTimeout(timeoutId);
+					setSlider();
+				}
+			});
 		}
-	}).keydown(function(event) { //firefox arrowkey navigation bug fix
+	};
+	preLoad = function() {
+		for (var i = 1; i < imgs.length; i++) {
+			$("#" + imgs[i]).attr('src', imgUrls[i]);
+			nth = i + 1;
+			console.log('...preloading image #' + nth + '...');
+			if (i === imgs.length - 1) {
+				$(".hidden").fadeIn();
+			}
+		}
+	};
+	sliderWidth = $(".slider").width();
+	howFar = $("body").width() - sliderWidth;
+	moveSlider = function() {
+		$(".slider").css({
+			"left": howFar
+		});
+		timeoutId = setTimeout(function() {
+			$(".slider").css({
+				"left": 0
+			});
+		}, 500);
+	};
+	moveSlider();
+	var param = setInterval(moveSlider, 1000);
+	intervalId = param;
+	$(window).load(function() {
+		console.log("Main image loaded, preloading rest of images...");
+		preLoad();
+		setHeights();
+		if ($('.first').attr('id') === $('.highlighted').attr('id').slice(0, -5)) { //unift with above
+    		clearInterval(param);
+    		clearTimeout(timeoutId);
+			setSlider();
+		}
+	});
+	setWidths();
+	$(".thumbs img").click(function() {
+		goTo($(this));
+	}).bind('touchstart', function() { //iOS
+		$(this).css({
+			"opacity": 1
+		}).siblings().css({
+			"opacity": 0.5
+		});
+	});
+	$(".back,.forward").bind('touchstart', function() { //more iOS
+		$(".thumbs img").css({
+			"opacity": 0.5
+		});
+	});
+	$(".back").click(function() {
+		if ($(".highlighted").index() > 0) {
+			goTo($(".highlighted").prev());
+		}
+	});
+	$(".forward").click(function() {
+		if ($(".highlighted").index() < imgs.length - 1) {
+			goTo($(".highlighted").next());
+		}
+	});
+	$(document.documentElement).keydown(function(event) { //keyboard navigation
 		var k = event.keyCode;
+		if (k == 37 && $(".highlighted").index() > 0) {
+			goTo($(".highlighted").prev());
+		} else if (k == 39 && $(".highlighted").index() < imgs.length - 1) {
+			goTo($(".highlighted").next());
+		}
 		if (k >= 37 && k <= 40) {
 			return false;
 		}
 	});
+	$(window).resize(function() {
+		setWidths(); //important to set widths before heights
+		setHeights();
+		$(".images,.slider").removeClass("transitions");
+		setSlider();
+		setTimeout(function() {
+			$(".images,.slider").addClass("transitions");
+		}, 5);
+		$(".images").css("transform", "translateX(" + $(".highlighted").index() * -bodyWidth + "px)");
+	});
+	$('img').on('dragstart', function(e) {
+		e.preventDefault();
+	}); //no accidentally dragging images
 });

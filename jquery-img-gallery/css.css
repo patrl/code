@@ -1,39 +1,22 @@
-ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,body,html,p,blockquote,fieldset,input {
+ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,body,html,p,blockquote,fieldset,input,div {
 	margin: 0;
 	padding: 0;
 }
 
-body,html {
+html,body {
+	width: 100%;
 	height: 100%;
-	overflow: hidden;
+	margin: 0;
+	padding: 0;
+	overflow-x: hidden;
+	-webkit-transform: translate3d(0,0,0); /*with -webkit-backface-visibility, fixes safari flashing on animation bug*/
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
 	-khtml-user-select: none;
 	-moz-user-select: moz-none;
 	-ms-user-select: none;
 	user-select: none;
-}
-
-.fadeIn {
-	opacity: 0;
-}
-
-.show {
-	position: absolute;
-	width: 100%;
-	text-align: center;
-}
-
-.showNew {
-	position: absolute;
-	width: 100%;
-	text-align: center;
-	opacity: 0;
-}
-
-#current {
-	max-height: 75%;
-	max-width: 100%;
 }
 
 .back {
@@ -57,30 +40,78 @@ body,html {
 	position: absolute;
 	left: -50px;
 	z-index: 1;
-	border-right: 10px solid #000;
-	border-left: 10px solid transparent;
-	border-bottom: 10px solid transparent;
-	border-top: 10px solid transparent;
+	border-right: 8px solid #000;
+	border-left: 8px solid transparent;
+	border-bottom: 8px solid transparent;
+	border-top: 8px solid transparent;
 }
 
 .arrowright {
 	position: absolute;
 	right: -50px;
 	z-index: 1;
-	border-right: 10px solid transparent;
-	border-left: 10px solid #000;
-	border-bottom: 10px solid transparent;
-	border-top: 10px solid transparent;
+	border-right: 8px solid transparent;
+	border-left: 8px solid #000;
+	border-bottom: 8px solid transparent;
+	border-top: 8px solid transparent;
+}
+
+.back:hover .arrowleft {
+	left: 0;
+}
+
+.forward:hover .arrowright {
+	right: 0;
+}
+
+.hidden,.php {
+	display: none;
+}
+
+.container {
+	overflow: hidden;
+	margin: auto;
+}
+
+.transitions {
+	-webkit-backface-visibility: hidden;
+	-moz-backface-visibility: hidden;
+	-webkit-transition: all .5s ease-out;
+	-moz-transition: all .5s ease-out;
+	-o-transition: all .5s ease-out;
+	transition: all .5s ease-out;
+}
+
+.big {
+	width: 100%;
+	float: left;
 }
 
 .thumbs {
-	text-align: center;
-	opacity: 0;
+    text-align: center;
+}
+
+.thumbs img {
+	opacity: .5;
+	-webkit-backface-visibility: hidden;
+	-moz-backface-visibility: hidden;
+	-webkit-transition: all .3s ease-out;
+	-moz-transition: all .3s ease-out;
+	-o-transition: all .3s ease-out;
+	transition: all .3s ease-out;
+	width: 11%;    /*custom*/
+	max-width: 190px; /*custom*/
+}
+
+.thumbs img:hover {
+	opacity: 1;
+	cursor: crosshair;
 }
 
 .slider {
-	width: 9.56%;
+	width: 10.6%; /*custom*/
+	top: -2px;
 	height: 1px;
-	background-color: rgba(0,0,0,0.5);
+	background-color: rgba(0,0,0,0.75);
 	position: relative;
 }
