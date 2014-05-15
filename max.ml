@@ -82,9 +82,14 @@ let dist0 (m: (ee -> prop) cont cont) : (ee -> prop) cont cont = fun k ->
 ;;
 
 (*dist reading should be true of `ex1 boy saw ex1 movie` -- viz. Boy2*)
+(*dist reading should be true of `ex2 boys saw ex3 movs` -- viz. Boy3,Boy4*)
 let e1b : ee cont cont = fun k -> card 1 0 (k the_boys);;
 let e1m : ee cont cont = fun k -> card 1 1 (k the_movs);;
+let e2b : ee cont cont = fun k -> card 2 0 (k the_boys);;
+let e3m : ee cont cont = fun k -> card 3 1 (k the_movs);;
 
 (*yay!*)
 lower (lap e1b (dist0 (rap sawk e1m))) [];;
 (* - : output = [[[Boy2]]]*)
+lower (lap e2b (dist0 (rap sawk e3m))) [];;
+(* - : output = [[[Boy3; Boy4]]]*)
