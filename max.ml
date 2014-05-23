@@ -64,7 +64,7 @@ let lap (m: 'a cont cont) (n: ('a -> 'b) cont cont) : 'b cont cont = fun k ->
   m (fun m' -> n (fun n' -> k (fun k' -> m' (fun x -> n' (fun f -> k' (f x))))))
 ;;
 
-let lower (m: prop cont cont) : 'a = m (fun m' -> m' (fun p -> p));;
+let lower (m: prop cont cont) : prop = m (fun m' -> m' (fun p -> p));;
 
 (*exactly three boys saw exactly five movies*)
 lower (lap e3b (rap sawk e5m)) [];;
