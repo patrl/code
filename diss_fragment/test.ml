@@ -1,3 +1,4 @@
+(****BEGIN****)
 (**Lexicon/model**)
 type e = Boy1 | Boy2 | Boy3 | Boy4 | Boy5 | Girl1 | Girl2 | Girl3 | Girl4 | Girl5;;
 type t = bool;;
@@ -98,11 +99,17 @@ let ev_boy : (e, t) cont =
   every (fun x -> inj (boy x));;
 let ev_girl : (e, t) cont = 
   every (fun x -> inj (girl x));;
+(****END****)
 
-(*a boy likes a girl*)
+
 let a_boy_likes_a_girl = 
   bind (lift a_boy) << 
     (up likes >> bind (lift a_girl));;
+(*(bool, '_a) cont = <fun>*)
+
 let a_boy_likes_a_girl_eval = 
   eval2 a_boy_likes_a_girl;;
 show a_boy_likes_a_girl_eval;;
+
+a_boy_likes_a_girl;;
+(*(bool, bool) cont = <fun>*)
