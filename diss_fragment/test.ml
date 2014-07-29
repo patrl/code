@@ -113,3 +113,12 @@ show a_boy_likes_a_girl_eval;;
 
 a_boy_likes_a_girl;;
 (*(bool, bool) cont = <fun>*)
+
+let id (a: int) : int = a;;
+let run (m: (int -> int) -> int) : int = m id;;
+
+let x (k: int -> 'a) : 'a = k 3;;
+let y : int = run x;;
+
+let zz = up Boy1;;
+let nu = eval2 zz;;
