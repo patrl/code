@@ -1,11 +1,11 @@
 (*data structures*)
 type terminal = string;;
-type label = S | DP | NP | VP | PP | N;;
+type label = string;;
 type input = string list;;
 type parseTree =
-  | Empty
   | Leaf of terminal
-  | Branch of (label * (parseTree * parseTree));;
+  | Unary of (label * parseTree)
+  | Binary of (label * (parseTree * parseTree));;
 type parser = input -> (parseTree * input) list;;
 
 (*monadic bits*)
@@ -18,7 +18,7 @@ let zero : parser = fun s -> [];;
 let (++) (m: parser) (n: parser) : parser = fun s -> 
   List.concat [m s; n s];;
 
-(*leaf and branch parsers*)
+(*leaf, unary, binary parsers*)
 let leaf (c: string) : parser = fun s -> 
   match s with
     | [] -> []
@@ -26,20 +26,43 @@ let leaf (c: string) : parser = fun s ->
       if x = c 
       then [(Leaf x, xs)]
       else [];;
-let branch (lab: label) (m: parser) (n: parser) : parser = 
+let unary (lab: label) (m: parser) = 
+  m >>= fun x -> 
+  return (Unary (lab, x));;
+let binary (lab: label) (m: parser) (n: parser) : parser = 
   m >>= fun x -> 
   n >>= fun y -> 
-  return (Branch (lab, (x, y)));;
+  return (Binary (lab, (x, y)));;
 
 (*the grammar*)
-let det : parser = leaf "the" ++ leaf "a" ++ leaf "every";;
-let verb : parser = leaf "owns" ++ leaf "beats" ++ leaf "sees";;
-let pp: parser = leaf "inside";;
-let n : parser = leaf "farmer" ++ leaf "donkey" ++ leaf "binoculars" ++ leaf "house";;
-let np : parser = n ++ branch NP n pp;;
-let dp : parser = branch DP det np;;
-let vp : parser = leaf "left" ++ branch VP verb dp ++ branch VP (branch VP verb dp) pp;;
-let s : parser = branch S dp vp;; 
+let det : parser = 
+  leaf "the" 
+	 ++ leaf "a" 
+	 ++ leaf "every";;
+let verb : parser = 
+  leaf "owns" 
+	 ++ leaf "beats" 
+	 ++ leaf "sees";;
+let ditrans : parser =
+  leaf "gives" 
+	 ++ leaf "shows";;
+let pp: parser = 
+  leaf "inside";;
+let n : parser = 
+  leaf "farmer"
+	 ++ leaf "donkey"
+	 ++ leaf "binoculars"
+	 ++ leaf "house";;
+let np : parser = 
+  n ++ binary "NP" n pp;;
+let dp : parser = 
+  leaf "Simon" ++ binary "DP" det np;;
+let vp : parser = 
+  leaf "left" 
+	 ++ binary "VP" verb dp 
+	 ++ binary "VP" (binary "VP" verb dp) pp 
+	 ++ binary "VP" (binary "VP" ditrans dp) dp;;
+let s : parser = binary "S" dp vp;; 
 
 let parse_debug (sentence: string) = 
   let tokenize s = 
@@ -56,6 +79,21 @@ let parse (sentence: string) =
       else [ ])
     (parse_debug sentence));;
 
-parse "the donkey left";;
-parse "the donkey owns every house";;
-parse "every farmer sees the donkey inside";;
+let tdl () = parse "the donkey left";;
+let tdoeh () = parse "the donkey owns every house";;
+let edbtfi () = parse "every donkey beats the farmer inside";;
+let ssadtf () = parse "Simon shows a donkey the farmer"
+
+let texify ps : unit list = 
+  let rec helper p = match p with 
+    | Leaf s -> s
+    | Unary (lab, tree) -> "[." ^ lab ^ " " ^ helper tree ^ "] "
+    | Binary (lab, (left, right)) ->
+      "[." ^ lab ^ " " ^ helper left ^ " " ^ helper right ^ " ]" in
+  List.map (fun p -> print_string ("\\Tree " ^ helper p ^ "\n" )) ps
+;;
+
+let a () = texify (tdl ());;
+let b () = texify (tdoeh ());;
+let c () = texify (edbtfi ());;
+let d () = texify (ssadtf ());;
