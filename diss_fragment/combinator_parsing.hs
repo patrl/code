@@ -36,7 +36,7 @@ branch lab m n = m `bind` \x -> n `bind` \y -> ret $ Branch (lab,(x,y))
 -- and that's it! let's get cookin..
 det,verb,ditr,prep,n,np,dp,pp,vp,s :: Parser
 det   = leaf "the"           `plus` 
-        leaf "a"              `plus` 
+        leaf "a"             `plus` 
         leaf "every"
 verb  = leaf "owns"          `plus` 
         leaf "beats"         `plus` 
