@@ -56,12 +56,13 @@ let n : parser =
 let np : parser = 
   n ++ binary "NP" n pp;;
 let dp : parser = 
-  leaf "Simon" ++ binary "DP" det np;;
+  leaf "Simon" ++ leaf "Matt" ++ binary "DP" det np;;
 let vp : parser = 
   leaf "left" 
 	 ++ binary "VP" verb dp 
 	 ++ binary "VP" (binary "VP" verb dp) pp 
-	 ++ binary "VP" (binary "VP" ditrans dp) dp;;
+	 ++ binary "VP" (binary "VP" ditrans dp) dp
+	 ++ binary "VP" (leaf "is") dp;;
 let s : parser = binary "S" dp vp;; 
 
 let parse_debug (sentence: string) = 
