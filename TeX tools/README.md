@@ -8,7 +8,7 @@ helper files (e.g., `aux`'s) that help speed along non-initial compilations.
 
 ## Usage
 
-Place `Makefile` in a directory with your `md` file(s). Then, navigate to that
+Place `Makefile` in a directory with your `md` file. Then, navigate to that
 directory with Terminal (or whatever). The following commands are available:
 
 ```
