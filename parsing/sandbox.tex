@@ -1,0 +1,38 @@
+\documentclass{article}
+\synctex=1
+\usepackage[margin=.8in]{geometry}
+\usepackage{forest,mathtools,newtxtext,newtxmath}
+\newcommand\bs\backslash{}
+\newcommand\sslash{\mathord{/\mkern-5mu/}}
+\newcommand\bbslash{\mathord{\bs\mkern-5.2mu\bs}}
+\begin{document}
+
+\begin{forest}for tree={scale=.8},where n children=0{tier=word}{}
+[{$\textbf{\textsf{Lower(SR($\star$R(SR(BA))))}} \vdash \textsf{M}t$} [{$e$} [dylan] ] [{$\textbf{\textsf{SR(FA$_\eta$)}} \vdash \textsf{M}t \sslash (\textsf{M}(e \backslash t) \bbslash \textsf{M}t)$} [{$\textsf{M}(e \backslash t) / \textsf{M}(e \backslash t)$} [didnt] ] [{$\textbf{\textsf{$\star$R(SR(FA))}} \vdash \textsf{M}t \sslash ((e \backslash t) \bbslash \textsf{M}t)$} [{$(e \backslash t) / e$} [saw] ] [{$\textsf{M}e$} [someone] ] ] ] ]
+\end{forest}\\
+
+\begin{forest}for tree={scale=.8},where n children=0{tier=word}{}
+[{$\textbf{\textsf{Lower($\star$R(SR(BA)))}} \vdash \textsf{M}t$} [{$e$} [dylan] ] [{$\textbf{\textsf{Lower(SR(FA$_\eta$))}} \vdash \textsf{M}(e \backslash t)$} [{$\textsf{M}(e \backslash t) / \textsf{M}(e \backslash t)$} [didnt] ] [{$\textbf{\textsf{$\star$R(SR(FA))}} \vdash \textsf{M}(e \backslash t) \sslash ((e \backslash t) \bbslash \textsf{M}(e \backslash t))$} [{$(e \backslash t) / e$} [saw] ] [{$\textsf{M}e$} [someone] ] ] ] ]
+\end{forest}\\
+
+\begin{forest}for tree={scale=.8},where n children=0{tier=word}{}
+[{$\textbf{\textsf{Lower($\star$R(SR($\star$R(SR(BA)))))}} \vdash \textsf{M}t$} [{$e$} [dylan] ] [{$\textbf{\textsf{Lower(SR(FA$_\eta$))}} \vdash \textsf{M}\textsf{M}(e \backslash t)$} [{$\textsf{M}(e \backslash t) / \textsf{M}(e \backslash t)$} [didnt] ] [{$\textbf{\textsf{$\star$R(SR(FA))}} \vdash \textsf{M}\textsf{M}(e \backslash t) \sslash ((e \backslash t) \bbslash \textsf{M}\textsf{M}(e \backslash t))$} [{$(e \backslash t) / e$} [saw] ] [{$\textsf{M}e$} [someone] ] ] ] ]
+\end{forest}\\
+
+\begin{forest}for tree={scale=.8},where n children=0{tier=word}{}
+[{$\textbf{\textsf{Lower($\star$R(SR(BA)))}} \vdash \textsf{M}t$} [{$e$} [dylan] ] [{$\textbf{\textsf{FA}} \vdash \textsf{M}(e \backslash t)$} [{$\textsf{M}(e \backslash t) / \textsf{M}(e \backslash t)$} [didnt] ] [{$\textbf{\textsf{Lower($\star$R(SR(FA)))}} \vdash \textsf{M}(e \backslash t)$} [{$(e \backslash t) / e$} [saw] ] [{$\textsf{M}e$} [someone] ] ] ] ]
+\end{forest}\\
+
+\begin{forest}for tree={scale=.8},where n children=0{tier=word}{}
+[{$\textbf{\textsf{Lower(SR($\star$R(SR(BA))))}} \vdash \textsf{M}t$} [{$e$} [dylan] ] [{$\textbf{\textsf{$\star$R(SR(FA$_\eta$))}} \vdash \textsf{M}t \sslash (\textsf{M}(e \backslash t) \bbslash \textsf{M}t)$} [{$\textsf{M}(e \backslash t) / \textsf{M}(e \backslash t)$} [didnt] ] [{$\textbf{\textsf{Lower($\star$R(SR(FA)))}} \vdash \textsf{M}(e \backslash t)$} [{$(e \backslash t) / e$} [saw] ] [{$\textsf{M}e$} [someone] ] ] ] ]
+\end{forest}\\
+
+\begin{forest}for tree={scale=.8},where n children=0{tier=word}{}
+[{$\textbf{\textsf{Lower($\star$R(SR(BA)))}} \vdash \textsf{M}t$} [{$e$} [dylan] ] [{$\textbf{\textsf{Lower($\star$R(SR(FA$_\eta$)))}} \vdash \textsf{M}(e \backslash t)$} [{$\textsf{M}(e \backslash t) / \textsf{M}(e \backslash t)$} [didnt] ] [{$\textbf{\textsf{Lower($\star$R(SR(FA)))}} \vdash \textsf{M}(e \backslash t)$} [{$(e \backslash t) / e$} [saw] ] [{$\textsf{M}e$} [someone] ] ] ] ]
+\end{forest}\\
+
+\begin{forest}for tree={scale=.8},where n children=0{tier=word}{}
+[{$\textbf{\textsf{Lower($\star$R(SR($\star$R(SR(BA)))))}} \vdash \textsf{M}t$} [{$e$} [dylan] ] [{$\textbf{\textsf{Lower($\star$R(SR(FA$_\eta$)))}} \vdash \textsf{M}\textsf{M}(e \backslash t)$} [{$\textsf{M}(e \backslash t) / \textsf{M}(e \backslash t)$} [didnt] ] [{$\textbf{\textsf{Lower($\star$R(SR(FA)))}} \vdash \textsf{M}(e \backslash t)$} [{$(e \backslash t) / e$} [saw] ] [{$\textsf{M}e$} [someone] ] ] ] ]
+\end{forest}\\
+
+\end{document}
