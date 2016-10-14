@@ -36,7 +36,8 @@ with [Homebrew](http://brew.sh/) (`brew install fswatch`) or
 [MacPorts](https://www.macports.org/) (`port install fswatch`). You'll need OS
 X to use `fswatch`.
 
-If you don't plan on invoking `make watch`, it should work out of the box.
+If you don't plan on invoking `make watch`, it should work out of the box
+(assuming you have `pandoc` and `latexmk`!).
 
 ## Notes
 
