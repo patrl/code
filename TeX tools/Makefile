@@ -25,6 +25,6 @@ watch: $(SRC)
 clean:
 	@latexmk -c $(TEX)
 	rm -rf *~ *.tmp
-	rm -f *.nav *.snm *.tex *.bcf *.bbl *.blg *.aux *.end *.fls *.log *.out *.fdb_latexmk *.xml *.gz
+	rm -f *.nav *.snm *.tex *.bcf *.bbl *.blg *.aux *.end *.fls *.log *.out *.fdb_latexmk *.xml *.gz *.vrb
 
 .PHONY: all watch clean
