@@ -4,10 +4,11 @@ SRC=$(wildcard *.$(MEXT))
 PDF=$(SRC:.md=.pdf)
 TEX=$(SRC:.md=.tex)
 
-# Latexmk options
+# Latexmk/pandoc options
 LATEXMKOPT=-pdf
 LATEX=pdflatex
 LATEXOPT=--shell-escape
+OUT=latex
 
 all:	$(PDF) $(TEX)
 
@@ -16,7 +17,7 @@ watch: $(SRC)
 	@fswatch -o $^ | xargs -n1 -I{} make
 
 %.tex: %.md
-	@pandoc $(SRC) -o $(TEX) -s
+	@pandoc -t $(OUT) $(SRC) -o $(TEX) -s
 
 %.pdf: %.tex
 	@latexmk $(LATEXMKOPT) -pdflatex="$(LATEX) $(LATEXOPT) %O %S" $(TEX) --silent
@@ -24,6 +25,6 @@ watch: $(SRC)
 clean:
 	@latexmk -c $(TEX)
 	rm -rf *~ *.tmp
-	rm -f *.tex *.bcf *.bbl *.blg *.aux *.end *.fls *.log *.out *.fdb_latexmk *.xml *.gz
+	rm -f *.nav *.snm *.tex *.bcf *.bbl *.blg *.aux *.end *.fls *.log *.out *.fdb_latexmk *.xml *.gz
 
 .PHONY: all watch clean
