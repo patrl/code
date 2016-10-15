@@ -35,7 +35,7 @@ $ [cmd] FLAG=some_flag  # Add a pandoc flag (e.g., --template=custom.tex).
 ```
 
 ```
-$ make clean            # Get rid of everything but the md and pdf files.
+$ make clean            # Get rid of everything but the md, tex, and pdf files.
 ```
 
 ```

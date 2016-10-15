@@ -27,7 +27,7 @@ clean:
 	@echo Cleaning...
 	@latexmk -c $(TEXS)
 	@rm -rf *~ *.tmp
-	@rm -f *.nav *.snm *.tex *.bcf *.bbl *.blg *.aux *.end *.fls *.log *.out *.fdb_latexmk *.xml *.gz *.vrb
+	@rm -f *.nav *.snm *.bcf *.bbl *.blg *.aux *.end *.fls *.log *.out *.fdb_latexmk *.xml *.gz *.vrb
 
 debug:
 	@latexmk $(LATEXMKOPT) -pdflatex="$(LATEX) $(LATEXOPT) %O %S" $<
