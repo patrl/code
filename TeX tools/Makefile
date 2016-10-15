@@ -9,6 +9,7 @@ LATEXMKOPT=-pdf
 LATEX=pdflatex
 LATEXOPT=--shell-escape
 OUT=latex
+FLAG=
 
 all:	$(PDFS) $(TEXS)
 
@@ -17,7 +18,7 @@ watch: $(SRCS)
 	@fswatch -o $^ | xargs -n1 -I{} make
 
 %.tex: %.md
-	@pandoc -t $(OUT) $< -o $@ -s
+	@pandoc -t $(OUT) $< -o $@ -s $(FLAG)
 
 %.pdf: %.tex
 	@latexmk $(LATEXMKOPT) -pdflatex="$(LATEX) $(LATEXOPT) %O %S" $< --silent
@@ -28,4 +29,7 @@ clean:
 	@rm -rf *~ *.tmp
 	@rm -f *.nav *.snm *.tex *.bcf *.bbl *.blg *.aux *.end *.fls *.log *.out *.fdb_latexmk *.xml *.gz *.vrb
 
-.PHONY: all watch clean
+debug:
+	@latexmk $(LATEXMKOPT) -pdflatex="$(LATEX) $(LATEXOPT) %O %S" $<
+
+.PHONY: all watch clean debug
