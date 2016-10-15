@@ -8,7 +8,7 @@ helper files (e.g., `aux`'s) that help speed along non-initial compilations.
 
 ## Usage
 
-Place `Makefile` in a directory with your `md` file. Then, navigate to that
+Place `Makefile` in a directory with your `md` file(s). Then, navigate to that
 directory with Terminal (or whatever). The following commands are available:
 
 ```
@@ -30,14 +30,14 @@ $ [cmd] OUT=beamer  # Outputs slides, for any [cmd] in {make, make watch}
 
 ## Dependencies
 
-If you want to issue `make watch` commands, you'll need
+You'll need `pandoc` and `latexmk`.
+
+If you don't plan on invoking `make watch`, it should work out of the box. If
+you want to `make watch`, you'll need
 [`fswatch`](https://github.com/emcrisostomo/fswatch), which you can install
 with [Homebrew](http://brew.sh/) (`brew install fswatch`) or
 [MacPorts](https://www.macports.org/) (`port install fswatch`). You'll need OS
 X to use `fswatch`.
-
-If you don't plan on invoking `make watch`, it should work out of the box
-(assuming you have `pandoc` and `latexmk`!).
 
 ## Notes
 
