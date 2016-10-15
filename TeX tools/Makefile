@@ -1,8 +1,8 @@
 # Sourcefiles
 MEXT=md
-SRC=$(wildcard *.$(MEXT))
-PDF=$(SRC:.md=.pdf)
-TEX=$(SRC:.md=.tex)
+SRCS=$(wildcard *.$(MEXT))
+PDFS=$(SRCS:.md=.pdf)
+TEXS=$(SRCS:.md=.tex)
 
 # Latexmk/pandoc options
 LATEXMKOPT=-pdf
@@ -10,20 +10,20 @@ LATEX=pdflatex
 LATEXOPT=--shell-escape
 OUT=latex
 
-all:	$(PDF) $(TEX)
+all:	$(PDFS) $(TEXS)
 
-watch: $(SRC)
+watch: $(SRCS)
 	@echo Watching for changes...
 	@fswatch -o $^ | xargs -n1 -I{} make
 
 %.tex: %.md
-	@pandoc -t $(OUT) $(SRC) -o $(TEX) -s
+	@pandoc -t $(OUT) $< -o $@ -s
 
 %.pdf: %.tex
-	@latexmk $(LATEXMKOPT) -pdflatex="$(LATEX) $(LATEXOPT) %O %S" $(TEX) --silent
+	@latexmk $(LATEXMKOPT) -pdflatex="$(LATEX) $(LATEXOPT) %O %S" $< --silent
 
 clean:
-	@latexmk -c $(TEX)
+	@latexmk -c $(TEXS)
 	rm -rf *~ *.tmp
 	rm -f *.nav *.snm *.tex *.bcf *.bbl *.blg *.aux *.end *.fls *.log *.out *.fdb_latexmk *.xml *.gz *.vrb
 
