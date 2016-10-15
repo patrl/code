@@ -23,8 +23,9 @@ watch: $(SRCS)
 	@latexmk $(LATEXMKOPT) -pdflatex="$(LATEX) $(LATEXOPT) %O %S" $< --silent
 
 clean:
+	@echo Cleaning...
 	@latexmk -c $(TEXS)
-	rm -rf *~ *.tmp
-	rm -f *.nav *.snm *.tex *.bcf *.bbl *.blg *.aux *.end *.fls *.log *.out *.fdb_latexmk *.xml *.gz *.vrb
+	@rm -rf *~ *.tmp
+	@rm -f *.nav *.snm *.tex *.bcf *.bbl *.blg *.aux *.end *.fls *.log *.out *.fdb_latexmk *.xml *.gz *.vrb
 
 .PHONY: all watch clean
