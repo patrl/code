@@ -1,8 +1,8 @@
 # Sourcefiles
 MEXT=md
 SRCS=$(wildcard *.$(MEXT))
-PDFS=$(SRCS:.md=.pdf)
-TEXS=$(SRCS:.md=.tex)
+PDFS=$(SRCS:.$(MEXT)=.pdf)
+TEXS=$(SRCS:.$(MEXT)=.tex)
 
 # Latexmk/pandoc options
 LATEXMKOPT=-pdf
@@ -13,23 +13,26 @@ FLAG=
 
 all:	$(PDFS) $(TEXS)
 
-watch: $(SRCS)
-	@echo Watching for changes...
-	@fswatch -o $^ | xargs -n1 -I{} make
-
 %.tex: %.md
+	@echo pandoc $<...
 	@pandoc -t $(OUT) $< -o $@ -s $(FLAG)
 
 %.pdf: %.tex
+	@echo latexmk $<...
 	@latexmk $(LATEXMKOPT) -pdflatex="$(LATEX) $(LATEXOPT) %O %S" $< --silent
+
+watch: $(SRCS)
+	@echo Watching for changes...
+	@fswatch -0 $^ | xargs -0 -n1 sh -c 'ALT=`basename "$$1"`; make $${ALT/"$(MEXT)"/pdf}' _
 
 clean:
 	@echo Cleaning...
-	@latexmk -c $(TEXS)
+	@latexmk -c $(TEXS) -f
 	@rm -rf *~ *.tmp
-	@rm -f *.nav *.snm *.bcf *.bbl *.blg *.aux *.end *.fls *.log *.out *.fdb_latexmk *.xml *.gz *.vrb
+	@rm -f *.tex *.nav *.snm *.bcf *.bbl *.blg *.aux *.end *.fls *.log *.out *.fdb_latexmk *.xml *.gz *.vrb
 
 debug:
+	@echo Debugging...
 	@latexmk $(LATEXMKOPT) -pdflatex="$(LATEX) $(LATEXOPT) %O %S" $<
 
 .PHONY: all watch clean debug
