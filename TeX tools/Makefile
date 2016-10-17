@@ -13,7 +13,7 @@ FLAG=
 
 all:	$(PDFS) $(TEXS)
 
-%.tex: %.md
+%.tex: %.$(MEXT)
 	@echo pandoc $<...
 	@pandoc -t $(OUT) $< -o $@ -s $(FLAG)
 
