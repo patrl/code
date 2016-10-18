@@ -23,7 +23,7 @@ all:	$(PDFS) $(TEXS)
 
 watch: $(SRCS)
 	@echo Watching for changes...
-	@fswatch -0 $^ | xargs -0 -n1 sh -c 'ALT=`basename "$$1"`; make $${ALT/"$(MEXT)"/pdf}' _
+	@fswatch -0 $^ | xargs -0 -n1 sh -c 'ALT=`basename "$$1"`; make $${ALT/."$(MEXT)"/.pdf}' _
 
 clean:
 	@echo Cleaning...
