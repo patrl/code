@@ -149,6 +149,8 @@ main = do
   putStrLn "\nFirst, checking 'ex3 boys saw ex5 movies'..."
   putStrLn "\n** `exactly` returns the following assignments:"
   printish . sho $ exactly 3 boys X (\x -> exactly 5 movies Y (`saw` x))
+  putStrLn "\n** now, with inverse scope"
+  printish . sho $ exactly 5 movies Y (\y -> exactly 3 boys X (y `saw`))
   putStrLn "\n** `exactlyD` returns the following assignments:"
   printish . sho $ exactlyD 3 boys X (\x -> exactlyD 5 movies Y (`saw` x))
   putStrLn "\n** `exactlyU` returns the following assignments:"
