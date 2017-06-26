@@ -1,7 +1,7 @@
 # Sourcefiles
 MEXT=md
 SRCS=$(wildcard *.$(MEXT))
-PDFS=$(SRCS:.$(MEXT)=.$(MEXT).pdf)
+PDFS=$(SRCS:.$(MEXT)=.pdf)
 TEXS=$(SRCS:.$(MEXT)=.tex)
 
 # Latexmk/pandoc options
