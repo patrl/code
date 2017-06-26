@@ -29,7 +29,7 @@ clean:
 	@echo Cleaning...
 	@latexmk -c $(TEXS) -f
 	@rm -rf *~ *.tmp
-	@rm -f *.tex *.nav *.snm *.bcf *.bbl *.blg *.aux *.end *.fls *.log *.out *.fdb_latexmk *.xml *.gz *.vrb
+	@rm -f *.tex *.nav *.snm *.bcf *.bbl *.blg *.aux *.end *.fls *.log *.out *.fdb_latexmk *.xml *.gz *.vrb *.aux.copy *.auxlock *.for
 
 debug:
 	@echo Debugging...
