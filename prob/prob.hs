@@ -1,20 +1,20 @@
-data PM a = PM [(a, Float)]
-  deriving (Show, Eq)
+-- Erwig & Kollmansberger (2006,JFP)
 
-instance Functor PM where
-  fmap f (PM a) = PM [(f x, n) | (x, n) <- a]
+import Control.Monad
 
-instance Applicative PM where
-  pure = return
-  PM a <*> PM b = PM [(f x, m*n) | (f, m) <- a, (x, n) <- b]
+newtype P a = P { unP :: [(a,Float)] } deriving (Show,Eq)
 
-instance Monad PM where
-  PM a >>= f = PM [(y, m*n) | (x, m) <- a, (y, n) <- unPM $ f x]
-  return x = PM [(x, 1)]
+instance Monad P where
+  return x  = P [(x,1)]
+  P a >>= f = P [(y,m*n) | (x,m) <- a,(y,n) <- unP $ f x]
 
-unPM :: PM t -> [(t, Float)]
-unPM (PM x) = x
+instance Applicative P where
+  pure  = return
+  (<*>) = ap
 
-certainly, impossible :: a -> PM a
-certainly = return
-impossible x = PM [(x, 0)]
+instance Functor P where
+  fmap f m = pure f <*> m
+
+certainly, impossible :: a -> P a
+certainly    = return
+impossible x = P [(x,0)]

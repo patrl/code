@@ -1,8 +1,12 @@
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs, DeriveFunctor, UndecidableInstances #-}
 
 import Control.Monad
 
 data Free f a = Pure a | Impure (f (Free f a))
+
+instance (Show a, Show (f (Free f a))) => Show (Free f a) where
+  show (Pure x) = show x
+  show (Impure m) = show m
 
 instance Functor f => Functor (Free f) where
   fmap f (Pure x) = Pure $ f x
@@ -49,4 +53,37 @@ instance Monad (FFree g) where
   FImpure u k' >>= k = FImpure u (k' >>> k)
     where f >>> g = (>>= g) . f
 
---main = print "hi"
+newtype F a b = F { unF :: (a, (a -> b)) } deriving Functor
+
+instance Show (a -> b) where
+  show f = "<fun>"
+
+instance Show a => Show (F a b) where
+  show (F (a, f)) = show (a, f)
+
+compose :: F a b -> b
+compose (F (x, f)) = f x
+
+foc :: a -> F a a
+foc x = F (x, id)
+
+test = do x <- eta $ foc 3
+          y <- eta $ foc 2
+          return $ x + y
+
+test1 = do x <- eta [0,1]
+           y <- eta [2,3]
+           return $ x + y
+
+test2 = do x <- eta $ Rooth (0, [0,1])
+           y <- eta $ Rooth (5, [5,6])
+           return $ x + y
+
+data Rooth a = Rooth { unRooth :: (a, [a]) } deriving Functor
+
+instance Show a => Show (Rooth a) where
+  show (Rooth (x, xs)) = show (x, xs)
+
+eval :: Free (F a) b -> b
+eval (Pure x) = x
+eval (Impure (F (x,f))) = eval $ f x

@@ -1,7 +1,7 @@
 # Sourcefiles
 MEXT=md
 SRCS=$(wildcard *.$(MEXT))
-PDFS=$(SRCS:.$(MEXT)=.$(MEXT).pdf)
+PDFS=$(SRCS:.$(MEXT)=.pdf)
 TEXS=$(SRCS:.$(MEXT)=.tex)
 
 # Latexmk/pandoc options
@@ -29,7 +29,7 @@ clean:
 	@echo Cleaning...
 	@latexmk -c $(TEXS) -f
 	@rm -rf *~ *.tmp
-	@rm -f *.tex *.nav *.snm *.bcf *.bbl *.blg *.aux *.end *.fls *.log *.out *.fdb_latexmk *.xml *.gz *.vrb
+	@rm -f *.tex *.nav *.snm *.bcf *.bbl *.blg *.aux *.end *.fls *.log *.out *.fdb_latexmk *.xml *.gz *.vrb *.aux.copy *.auxlock *.for
 
 debug:
 	@echo Debugging...

@@ -22,11 +22,27 @@ instance Monad m => Monad (Upd m s) where
  -
 --}
 
+newtype Updd s a = Updd {runUpdd :: [s] -> [[(a, s)]]}
+
+instance Monad (Updd s) where
+  return x = Updd $ \ss -> [[(x,s)] | s <- ss]
+  Updd m >>= k = Updd $ \ss -> do
+    vs <- m ss
+    (x,s) <- vs
+    runUpdd (k x) [s]
+
 -- boilerplate
 instance Monad m => Functor (Upd m s) where
   fmap = liftM
 
 instance Monad m => Applicative (Upd m s) where
+  pure = return
+  (<*>) = ap
+
+instance Functor (Updd s) where
+  fmap = liftM
+
+instance Applicative (Updd s) where
   pure = return
   (<*>) = ap
 
